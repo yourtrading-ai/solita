@@ -2,5 +2,4 @@ dist/
 .idea/
 yarn.lock
 test/integration/output
-generated
-node_modules
+.crates/
