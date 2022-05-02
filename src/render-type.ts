@@ -55,13 +55,13 @@ class TypeRenderer {
       .join(',\n  ')
 
       if(this.ty.type.fields.length == 0){
-        return `export type ${this.upperCamelTyName} = void`
+        return `export type ${this.upperCamelTyName} = {}`
       }
       else{
-    return `export type ${this.upperCamelTyName} = {
-      ${fields}
-    }`
-    }
+        return `export type ${this.upperCamelTyName} = {
+          ${fields}
+        }`
+      }
   }
 
   // -----------------
