@@ -2,4 +2,6 @@ dist/
 .idea/
 yarn.lock
 test/integration/output
-.crates/
+test/anchor-examples/
+generated/
+node_modules/
