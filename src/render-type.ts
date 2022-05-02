@@ -49,14 +49,19 @@ class TypeRenderer {
         true
       )
     }
+
     const fields = this.ty.type.fields
       .map((field) => this.renderTypeField(field))
       .join(',\n  ')
 
-    const code = `export type ${this.upperCamelTyName} = {
-  ${fields}
-}`
-    return code
+      if(this.ty.type.fields.length == 0){
+        return `export type ${this.upperCamelTyName} = void`
+      }
+      else{
+    return `export type ${this.upperCamelTyName} = {
+      ${fields}
+    }`
+    }
   }
 
   // -----------------
