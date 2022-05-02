@@ -49,7 +49,6 @@ class TypeRenderer {
         true
       )
     }
-    if (this.ty.type.fields.length === 0) return ''
     const fields = this.ty.type.fields
       .map((field) => this.renderTypeField(field))
       .join(',\n  ')
@@ -86,7 +85,7 @@ class TypeRenderer {
     }
 
     const mappedFields = this.typeMapper.mapSerdeFields(this.ty.type.fields)
-    return renderTypeDataStruct({
+    return renderTypeDataStruct({ 
       fields: mappedFields,
       beetVarName: this.beetArgName,
       typeName: this.upperCamelTyName,

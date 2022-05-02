@@ -179,10 +179,7 @@ export function renderTypeDataStruct({
   typeName: string
   isFixable: boolean
 }) {
-  assert(
-    fields.length > 0,
-    `Rendering struct for ${typeName} should have at least 1 field`
-  )
+
   const fieldDecls = fields
     .map((f) => {
       return `['${f.name}', ${f.type}]`
