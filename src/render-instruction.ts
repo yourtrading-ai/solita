@@ -35,6 +35,7 @@ class InstructionRenderer {
   readonly accountsTypename: string
   readonly instructionDiscriminatorName: string
   readonly structArgName: string
+  readonly accounts: string
   private readonly instructionDiscriminator: InstructionDiscriminator
 
   constructor(
@@ -52,6 +53,7 @@ class InstructionRenderer {
 
     this.argsTypename = `${this.upperCamelIxName}InstructionArgs`
     this.accountsTypename = `${this.upperCamelIxName}InstructionAccounts`
+    this.accounts = `${this.upperCamelIxName}Accounts`
     this.instructionDiscriminatorName = `${this.camelIxName}InstructionDiscriminator`
     this.structArgName = `${ix.name}Struct`
 
@@ -88,6 +90,23 @@ export type ${this.argsTypename} = {
     return code
   }
 
+  private renderAccounts(processedKeys: ProcessedAccountKey[]) {
+    if (processedKeys.length === 0) return ''
+    const fields = processedKeys
+      .filter((x) => x.knownPubkey == null)
+      .map((x) => {
+        return `"${x.name}",`
+      })
+      .join('\n  ')
+
+    const docs = `
+`.trim()
+    return `${docs}
+export const ${this.accounts} = [
+  ${fields}
+]
+`
+  }
   // -----------------
   // Imports
   // -----------------
@@ -275,7 +294,7 @@ export type ${this.accountsTypename} = {
  * @category ${this.upperCamelIxName}
  * @category generated
  */
-${struct}`.trim()
+export ${struct}`.trim()
   }
 
   render() {
@@ -284,7 +303,7 @@ ${struct}`.trim()
     const ixArgType = this.renderIxArgsType()
     const processedKeys = this.processIxAccounts()
     const accountsType = this.renderAccountsType(processedKeys)
-
+    const accounts = this.renderAccounts(processedKeys)
     const processedArgs = this.serdeProcess()
     const argsStructType = this.renderDataStruct(processedArgs)
 
@@ -316,6 +335,7 @@ ${enums}
 ${ixArgType}
 ${argsStructType}
 ${accountsType}
+${accounts}
 const ${this.instructionDiscriminatorName} = ${instructionDisc};
 
 /**

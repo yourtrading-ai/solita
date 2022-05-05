@@ -291,9 +291,9 @@ export class Solita {
       await fs.writeFile(this.paths.instructionFile(name), code, 'utf8')
     }
     logDebug('Writing index.ts exporting all instructions')
-    const indexCode = this.renderImportIndex(
+    const indexCode = this.renderImportInstructionIndex(
       Object.keys(instructions).sort(),
-      'instructions'
+      'instructions',
     )
     await fs.writeFile(this.paths.instructionFile('index'), indexCode, 'utf8')
   }
@@ -407,4 +407,42 @@ ${programIdConsts}
     }
     return code
   }
+
+  private renderImportInstructionIndex(modules: string[], label: string) {
+    let count = 0
+    let code = modules.map((x) => `export * from './${x}';`).join('\n') + '\n' + '\n'
+    code = code + modules.map((x) => `import * as ${x} from './${x}';`).join('\n')  + '\n' + '\n'
+
+    code = code + modules.map((x) => `import type { ${this.capitalize(x)}InstructionAccounts } from './${x}';`).join('\n')  + '\n' + '\n'
+
+    code = code + `export enum InstructionType {`+'\n'
+    code = code + modules.map((x) => '\t' + `${x} = '${x}',`).join('\n') + '\n' + '}' + '\n' + '\n'
+
+    code = code + `export const IX_METHOD_CODE: Record<string,InstructionType | undefined> = {` + '\n'
+    code = code + modules.map((x) => `[${count++}]: InstructionType.${x},`).join('\n')  + '\n' + '\n' + '}' + '\n' + '\n'
+
+    code = code + `export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {` + '\n'
+    code = code + modules.map((x) => `[InstructionType.${x}]: ${x}.${x}Struct,`).join('\n')  + '\n' + '\n' + '}' + '\n' + '\n'
+
+    code = code + `export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {` + '\n'
+    code = code + modules.map((x) => `[InstructionType.${x}]: ${x}.${this.capitalize(x)}Accounts,`).join('\n')  + '\n' + '\n' + '}'
+    
+    if (this.formatCode) {
+      try {
+        code = format(code, this.formatOpts)
+      } catch (err) {
+        logError(`Failed to format ${label} imports`)
+        logError(err)
+      }
+    }
+
+    return code
+  }
+
+  private capitalize(word: string) {
+    const capizalized = word.charAt(0).toUpperCase() + word.slice(1);
+    return capizalized
+  }
 }
+
+
