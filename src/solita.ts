@@ -413,8 +413,6 @@ ${programIdConsts}
     let code = modules.map((x) => `export * from './${x}';`).join('\n') + '\n' + '\n'
     code = code + modules.map((x) => `import * as ${x} from './${x}';`).join('\n')  + '\n' + '\n'
 
-    code = code + modules.map((x) => `import type { ${this.capitalize(x)}InstructionAccounts } from './${x}';`).join('\n')  + '\n' + '\n'
-
     code = code + `export enum InstructionType {`+'\n'
     code = code + modules.map((x) => '\t' + `${x} = '${x}',`).join('\n') + '\n' + '}' + '\n' + '\n'
 
