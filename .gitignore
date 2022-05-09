@@ -3,5 +3,5 @@ dist/
 yarn.lock
 test/integration/output
 test/anchor-examples/
-generated/
+output_solita/
 node_modules/

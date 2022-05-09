@@ -6,7 +6,14 @@ const PROGRAM_ID = 'D7ko992PKYLDKFy3fWCQsePvWF3Z7CmvoDHnViGf8bfm'
 
 const path = require('path')
 const generatedIdlDir = path.join(__dirname, '..', 'src', 'idl')
-const generatedSDKDir = path.join(__dirname, '..', 'generated')
+const generatedSDKDir = path.join(
+  __dirname,
+  '..',
+  'output_solita',
+  PROGRAM_NAME,
+  'src',
+  'sdk'
+)
 const { spawn } = require('child_process')
 const { Solita } = require('../dist/src/solita')
 const { writeFile } = require('fs/promises')
