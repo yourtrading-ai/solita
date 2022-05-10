@@ -1,4 +1,4 @@
-import { Idl, Solita } from '../../src/solita'
+import { Idl, Solita } from '../../src/solita/solita'
 import test from 'tape'
 import path from 'path'
 import {

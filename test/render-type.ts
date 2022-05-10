@@ -1,8 +1,8 @@
 import test, { Test } from 'tape'
-import { renderType } from '../src/render-type'
-import { SerdePackage } from '../src/serdes'
-import { FORCE_FIXABLE_NEVER } from '../src/type-mapper'
-import { BEET_PACKAGE, IdlDefinedTypeDefinition } from '../src/types'
+import { renderType } from '../src/solita/render-type'
+import { SerdePackage } from '../src/solita/serdes'
+import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
+import { BEET_PACKAGE, IdlDefinedTypeDefinition } from '../src/solita/types'
 import {
   analyzeCode,
   verifyImports,

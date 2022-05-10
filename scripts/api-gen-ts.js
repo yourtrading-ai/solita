@@ -5,17 +5,26 @@ const PROGRAM_NAME = 'switchboard_v2'
 const PROGRAM_ID = 'D7ko992PKYLDKFy3fWCQsePvWF3Z7CmvoDHnViGf8bfm'
 
 const path = require('path')
-const generatedIdlDir = path.join(__dirname, '..', 'src', 'idl')
+const generatedIdlDir = path.join(__dirname, '..', 'src', 'solita', 'idl')
 const generatedSDKDir = path.join(
   __dirname,
   '..',
-  'output_solita',
+  'generated',
   PROGRAM_NAME,
-  'src',
-  'sdk'
+  'ts'
 )
+
+const generatedSchemaDir = path.join(
+  __dirname,
+  '..',
+  'generated',
+  PROGRAM_NAME,
+  'schema'
+)
+
 const { spawn } = require('child_process')
-const { Solita } = require('../dist/src/solita')
+const { Solita } = require('../dist/src/solita/solita')
+const { Schema } = require('../dist/src/schema/schema')
 const { writeFile } = require('fs/promises')
 
 const anchor = spawn('anchor', ['build', '--idl', generatedIdlDir])
@@ -35,6 +44,7 @@ const anchor = spawn('anchor', ['build', '--idl', generatedIdlDir])
       path.join(generatedIdlDir, `${PROGRAM_NAME}.json`)
     )
     generateTypeScriptSDK()
+    generateSchema()
   })
 
 anchor.stdout.on('data', (buf) => console.log(buf.toString('utf8')))
@@ -53,6 +63,28 @@ async function generateTypeScriptSDK() {
   await gen.renderAndWriteTo(generatedSDKDir)
 
   console.error('Success!')
+}
+
+async function generateSchema() {
+  await sleep(700) // weird but easy functional solution to manage multithread processes
+  console.error('Generating Schema to %s', generatedSchemaDir)
+  const generatedIdlPath = path.join(generatedIdlDir, `${PROGRAM_NAME}.json`)
+
+  const idl = require(generatedIdlPath)
+  if (idl.metadata?.address == null) {
+    idl.metadata = { ...idl.metadata, address: PROGRAM_ID }
+    await writeFile(generatedIdlPath, JSON.stringify(idl, null, 2))
+  }
+  const gen = new Schema(idl, { formatCode: true })
+  await gen.renderAndWriteTo(generatedSchemaDir)
+
+  console.error('Success!')
 
   process.exit(0)
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 }

@@ -1,6 +1,6 @@
 import test from 'tape'
 import spok from 'spok'
-import { TypeMapper } from '../src/type-mapper'
+import { TypeMapper } from '../src/solita/type-mapper'
 import {
   BEET_PACKAGE,
   BEET_SOLANA_PACKAGE,
@@ -8,8 +8,8 @@ import {
   IdlType,
   IdlTypeEnum,
   SOLANA_WEB3_PACKAGE,
-} from '../src/types'
-import { SerdePackage } from '../src/serdes'
+} from '../src/solita/types'
+import { SerdePackage } from '../src/solita/serdes'
 
 const SOME_FILE_DIR = '/root/app/'
 
