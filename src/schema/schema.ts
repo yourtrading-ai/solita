@@ -277,7 +277,7 @@ export class Schema {
     for (const [name, code] of Object.entries(types)) {
       logDebug('Writing type: %s', name)
       //await fs.writeFile(this.paths.typeFile(name), code, 'utf8')
-      outputcode += "type " + name + " {" + code + "\n \n \n Next Type: \n \n"
+      outputcode += code
     }
     return outputcode
   }

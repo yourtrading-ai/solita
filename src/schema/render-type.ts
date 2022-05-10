@@ -1,13 +1,11 @@
 import { ForceFixable, TypeMapper } from './type-mapper'
 import {
-  BEET_PACKAGE,
   IdlDefinedTypeDefinition,
   IdlField,
   isIdlTypeEnum,
   PrimitiveTypeKey,
 } from './types'
 import { strict as assert } from 'assert'
-import { renderTypeDataStruct, serdePackageExportName } from './serdes'
 import { renderScalarEnum } from './render-enums'
 import { PathLike } from 'fs'
 
@@ -42,62 +40,45 @@ class TypeRenderer {
     return `${field.name}: ${typescriptType}`
   }
 
-  private renderTypeScriptType() {
+  private renderTypes() {
     if (isIdlTypeEnum(this.ty.type)) {
       return renderScalarEnum(
-        this.ty.name,
-        this.ty.type.variants.map((x) => x.name),
-        true
+          this.ty.name,
+          this.ty.type.variants.map((x) => x.name),
+          true
       )
     }
+    let outputcode=""
 
     const fields = this.ty.type.fields
-      .map((field) => this.renderTypeField(field))
-      .join(',\n  ')
+        .map((field) => this.renderTypeField(field))
+        //.join(': ,\n  ')
 
-      if(this.ty.type.fields.length == 0){
-        return `export type ${this.upperCamelTyName} = {}`
-      }
-      else{
-        return `export type ${this.upperCamelTyName} = {
-          ${fields}
+    let counter = 0
+    for (var element of this.ty.type.fields){
+      counter++
+      if(String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" ||  String(element.type) == "i32") {
+          outputcode += element.name + ": Int " + "  \n" //comma vanishes for some reaeson
+      }else if(String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128"){
+        outputcode += element.name + ": String " + "  \n"
+      }else
+      outputcode += fields[counter] + " \n"
+
+    }
+
+    if(this.ty.type.fields.length == 0){
+      return `type ${this.upperCamelTyName} = {}`
+    }
+    else{
+      return `type ${this.upperCamelTyName} = {
+          ${outputcode}
         }`
-      }
-  }
-
-  // -----------------
-  // Imports
-  // -----------------
-  private renderImports() {
-    const imports = this.typeMapper.importsUsed(
-      this.fullFileDir,
-      new Set([BEET_PACKAGE])
-    )
-    return imports.join('\n')
+    }
   }
 
   // -----------------
   // Data Struct
   // -----------------
-  private renderDataStructOrEnum() {
-    if (isIdlTypeEnum(this.ty.type)) {
-      const serde = this.typeMapper.mapSerde(this.ty.type, this.ty.name)
-      const enumTy = this.typeMapper.map(this.ty.type, this.ty.name)
-      this.typeMapper.serdePackagesUsed.add(BEET_PACKAGE)
-      const exp = serdePackageExportName(BEET_PACKAGE)
-      // Need the cast here since otherwise type is assumed to be
-      // FixedSizeBeet<typeof ${enumTy}, typeof ${enumTy}> which is incorrect
-      return `const ${this.beetArgName} = ${serde} as ${exp}.FixedSizeBeet<${enumTy}, ${enumTy}>`
-    }
-
-    const mappedFields = this.typeMapper.mapSerdeFields(this.ty.type.fields)
-    return renderTypeDataStruct({ 
-      fields: mappedFields,
-      beetVarName: this.beetArgName,
-      typeName: this.upperCamelTyName,
-      isFixable: this.typeMapper.usedFixableSerde,
-    })
-  }
 
   private renderDataStructs() {
     const kind = this.ty.type.kind
@@ -105,9 +86,9 @@ class TypeRenderer {
       kind === 'struct' || kind === 'enum',
       `only user defined structs or enums are supported, ${this.ty.name} is of type ${this.ty.type.kind}`
     )
-    const typeScriptType = this.renderTypeScriptType()
-    const dataStruct = this.renderDataStructOrEnum()
-    return { typeScriptType, dataStruct }
+    const types = this.renderTypes()
+
+    return { types }
   }
 
   /**
@@ -122,18 +103,11 @@ class TypeRenderer {
 
   render() {
     this.typeMapper.clearUsages()
-    const { typeScriptType, dataStruct } = this.renderDataStructs()
+    const { types } = this.renderDataStructs()
 
-    const imports = this.renderImports()
     return `
-${imports}
-${typeScriptType}
+${types}
 
-/**
- * @category userTypes
- * @category generated
- */
-export ${dataStruct}
 `.trim()
   }
 }
