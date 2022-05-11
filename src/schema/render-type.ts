@@ -39,7 +39,6 @@ class TypeRenderer {
     const typescriptType = this.typeMapper.map(field.type, field.name)
     return `${field.name}: ${typescriptType}`
   }
-
   private renderTypes() {
     if (isIdlTypeEnum(this.ty.type)) {
       return renderScalarEnum(
@@ -48,72 +47,64 @@ class TypeRenderer {
           true
       )
     }
-    let outputcode = ""
-
     const fields = this.ty.type.fields
         .map((field) => this.renderTypeField(field))
-    //.join(': ,\n  ')
+        //.join(': ,\n  ')
 
-    let counter = 0
+    let outputcode = ""
     var BorshDecimalNotIntitialized = false //keeps track if already created type BorshDecimal
-    for (const element of this.ty.type.fields) {
-      console.log("Find: " + (String(element.type)  === "BorshDecimal") + "      " + element.name + "      " + element.type )
-//
-      if (String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" || String(element.type) == "i32") {
-        outputcode += element.name + ": Int " + "  \n"
-      } else if (String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128") {
-        outputcode += element.name + ": GraphQLLong " + "  \n"
-      } else if (String(element.type)  == "BorshDecimal") {
-        //consists of
-        // mantissa: beet.bignum
-        // scale: number
-        if (BorshDecimalNotIntitialized){
-          outputcode +=
-              "type BorshDecimal { \n" +
-              "mantissa: GraphQLLong \n" +
-              "scale: Int \n }"
-          BorshDecimalNotIntitialized = true
-        }
-
-        outputcode += element.name + ": " + "BorshDecimalA \n"
-      } else if (isIdlTypeArray(element.type)) { //Array types
-
-        if (fields[counter] != null) {
-
-          //numberarrays
-          if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "number") {
-            outputcode += element.name + ": " + "[Int] \n"
-
-            //booleanarrays
-          } else if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "boolean") {
-            outputcode += element.name + ": " + "[Boolean] \n"
-            //bignumnarrays
-          } else if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "beet.bignum") {
-            outputcode += element.name + ": " + "[GraphQLLong] \n"
-          } else{
-            outputcode += fields[counter] + "     \n"       //An array but no type match? just print it then
-          }
-
-
-        } else {
-          outputcode += fields[counter] + " \n" //Nothing from the above? number array nothing? then just print what you are
-        }
-      }
-      // console.log("Name: " + element.name + "   Type: " + element.type)
-      counter++
+    if(this.ty.type.fields.length == 0){
+      outputcode = `type ${this.upperCamelTyName} {}`  + `\n`
+      return outputcode
     }
-      if (this.ty.type.fields.length == 0) {
-        //return `type ${this.upperCamelTyName} = {}`     //How to deal with types without parameters? Leaving them out for now
-        return ''
-      } else {
-        return `type ${this.upperCamelTyName} = { 
-          ${fields}
-        }`
+    else{
+      let counter = 0
+      outputcode = `type ${this.upperCamelTyName} {` + `\n`
+      for (var element of this.ty.type.fields){
+        if (String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" || String(element.type) == "i32") {
+            outputcode += `\t` + element.name + `: Int ` + `\n`
+          } else if (String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128") {
+            outputcode += `\t` + element.name + ": GraphQLLong " + "  \n"
+          } else if (String(element.type)  == "BorshDecimal") {
+            //consists of
+            // mantissa: beet.bignum
+            // scale: number
+            if (BorshDecimalNotIntitialized){
+              outputcode +=
+                  "type BorshDecimal { \n" +
+                  "mantissa: GraphQLLong \n" +
+                  "scale: Int \n }"
+              BorshDecimalNotIntitialized = true
+            }
+    
+            outputcode += element.name + ": " + "BorshDecimalA \n"
+          } else if (isIdlTypeArray(element.type)) { //Array types
+    
+            if (fields[counter] != null) {
+    
+              //numberarrays
+              if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "number") {
+                outputcode += `\t` + element.name + ": " + "[Int] \n"
+    
+                //booleanarrays
+              } else if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "boolean") {
+                outputcode += `\t` + element.name + ": " + "[Boolean] \n"
+                //bignumnarrays
+              } else if (fields[counter].substring(fields[counter].indexOf(':') + 1, fields[counter].indexOf('[')).trim() === "beet.bignum") {
+                outputcode += `\t` + element.name + ": " + "[GraphQLLong] \n"
+              } else{
+                outputcode += `\t` + fields[counter] + "\n"       //An array but no type match? just print it then
+              }
+            } else {
+              outputcode += `\t` + fields[counter] + "\n" //Nothing from the above? number array nothing? then just print what you are
+            }
+          }
+          counter++
       }
-
+      outputcode = outputcode + `}` + `\n`
+      return outputcode
+    }
   }
-
-
 
   // -----------------
   // Data Struct
@@ -144,10 +135,7 @@ class TypeRenderer {
     this.typeMapper.clearUsages()
     const { types } = this.renderDataStructs()
 
-    return `
-${types}
-
-`.trim()
+    return `${types}`
   }
 }
 
