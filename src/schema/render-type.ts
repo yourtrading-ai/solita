@@ -58,7 +58,7 @@ class TypeRenderer {
     var BorshDecimalNotIntitialized = false //keeps track if already created type BorshDecimal
     for (const element of this.ty.type.fields) {
       console.log("Find: " + (String(element.type)  === "BorshDecimal") + "      " + element.name + "      " + element.type )
-
+//
       if (String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" || String(element.type) == "i32") {
         outputcode += element.name + ": Int " + "  \n"
       } else if (String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128") {
