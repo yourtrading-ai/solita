@@ -48,31 +48,29 @@ class TypeRenderer {
           true
       )
     }
-    let outputcode=""
-
     const fields = this.ty.type.fields
         .map((field) => this.renderTypeField(field))
         //.join(': ,\n  ')
 
-    let counter = 0
-    for (var element of this.ty.type.fields){
-      counter++
-      if(String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" ||  String(element.type) == "i32") {
-          outputcode += element.name + ": Int " + "  \n" //comma vanishes for some reaeson
-      }else if(String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128"){
-        outputcode += element.name + ": String " + "  \n"
-      }else
-      outputcode += fields[counter] + " \n"
-
-    }
-
+    let outputcode = ""
     if(this.ty.type.fields.length == 0){
-      return `type ${this.upperCamelTyName} = {}`
+      outputcode = `type ${this.upperCamelTyName} {}`  + `\n`
+      return outputcode
     }
     else{
-      return `type ${this.upperCamelTyName} = {
-          ${outputcode}
-        }`
+      let counter = 0
+      outputcode = `type ${this.upperCamelTyName} {` + `\n`
+      for (var element of this.ty.type.fields){
+        if(String(element.type) == "u8" || String(element.type) == "i8" || String(element.type) == "u32" ||  String(element.type) == "i32") {
+          outputcode += `\t` + element.name + `: Int ` + `\n`
+        }else if(String(element.type) == "u64" || String(element.type) == "i64" || String(element.type) == "i128" || String(element.type) == "u128"){
+          outputcode += `\t` + element.name + `: String ` + `\n`
+        }else
+        outputcode += `\t` + fields[counter] + `\n`
+        counter++
+      }
+      outputcode = outputcode + `}`  + `\n`
+      return outputcode
     }
   }
 
@@ -83,7 +81,7 @@ class TypeRenderer {
   private renderDataStructs() {
     const kind = this.ty.type.kind
     assert(
-      kind === 'struct' || kind === 'enum',
+      kind === 'struct' || kind === 'enum', 
       `only user defined structs or enums are supported, ${this.ty.name} is of type ${this.ty.type.kind}`
     )
     const types = this.renderTypes()
@@ -105,10 +103,7 @@ class TypeRenderer {
     this.typeMapper.clearUsages()
     const { types } = this.renderDataStructs()
 
-    return `
-${types}
-
-`.trim()
+    return `${types}`
   }
 }
 

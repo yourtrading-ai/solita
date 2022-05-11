@@ -27,16 +27,6 @@ import { Paths } from './paths'
 
 export * from './types'
 
-const DEFAULT_FORMAT_OPTS: Options = {
-  semi: false,
-  singleQuote: true,
-  trailingComma: 'es5',
-  useTabs: false,
-  tabWidth: 2,
-  arrowParens: 'always',
-  printWidth: 80,
-  parser: 'typescript',
-}
 
 export class Schema {
   private readonly formatCode: boolean
@@ -59,9 +49,9 @@ export class Schema {
       typeAliases?: TypeAliases
     } = {}
   ) {
-    this.formatCode = formatCode
-    this.formatOpts = { ...DEFAULT_FORMAT_OPTS, ...formatOpts }
-    this.prependGeneratedWarning = prependGeneratedWarning
+    this.formatCode = false
+    this.formatOpts = {}
+    this.prependGeneratedWarning = false
     this.accountsHaveImplicitDiscriminator = !isShankIdl(idl)
     this.typeAliases = new Map(Object.entries(aliases))
   }
@@ -162,17 +152,6 @@ export class Schema {
           fixableTypes.add(ty.name)
         }
 
-        if (this.prependGeneratedWarning) {
-          code = prependGeneratedWarning(code)
-        }
-        if (this.formatCode) {
-          try {
-            code = format(code, this.formatOpts)
-          } catch (err) {
-            logError(`Failed to format ${ty.name} instruction`)
-            logError(err)
-          }
-        }
         types[ty.name] = code
       }
     }
@@ -273,13 +252,15 @@ export class Schema {
   private writeTypes(types: Record<string, string>) {
     assert(this.paths != null, 'should have set paths')
 
+    let query = "type Query {\n"
     let outputcode = "";
     for (const [name, code] of Object.entries(types)) {
       logDebug('Writing type: %s', name)
-      //await fs.writeFile(this.paths.typeFile(name), code, 'utf8')
+      query += "\t" + this.lowerCase(name) + ": [" + name + "]\n" 
       outputcode += code
     }
-    return outputcode
+    query = query + "}\n"
+    return query + outputcode
   }
 
   // -----------------
@@ -294,6 +275,11 @@ export class Schema {
       code = this.writeTypes(types)
     }
 
-    await fs.writeFile(path.join(this.paths.root, `schema.graphql`), code, 'utf8')
+    await fs.writeFile(path.join(this.paths.root, `schema.graphql`), code)
+  }
+  private lowerCase(word: string) {
+    const lowerCased = word.charAt(0).toLowerCase() + word.slice(1);
+    return lowerCased
   }
 }
+

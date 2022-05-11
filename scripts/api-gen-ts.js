@@ -75,7 +75,7 @@ async function generateSchema() {
     idl.metadata = { ...idl.metadata, address: PROGRAM_ID }
     await writeFile(generatedIdlPath, JSON.stringify(idl, null, 2))
   }
-  const gen = new Schema(idl, { formatCode: true })
+  const gen = new Schema(idl, { formatCode: false })
   await gen.renderAndWriteTo(generatedSchemaDir)
 
   console.error('Success!')
