@@ -3,12 +3,8 @@ export function renderScalarEnum(
   variants: string[],
   includeExport: boolean
 ) {
-  const exp = includeExport ? 'export ' : ''
+  const exp = includeExport ? '' : ''
   return `
-/**
- * @category enums
- * @category generated
- */
 ${exp}enum ${name} {
   ${variants.join(',\n  ')}    
 }`.trim()
