@@ -8,9 +8,7 @@ import { strict as assert } from 'assert'
 import {
   TypeAliases,
   Idl,
-  IdlType,
   isIdlDefinedType,
-  isIdlTypeDefined,
   isIdlTypeEnum,
   isShankIdl,
   PrimitiveTypeKey,
@@ -96,12 +94,6 @@ export class Schema {
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
 
-    function forceFixable(ty: IdlType) {
-      if (isIdlTypeDefined(ty) && fixableTypes.has(ty.defined)) {
-        return true
-      }
-      return false
-    }
 
     // NOTE: we render types first in order to know which ones are 'fixable' by
     // the time we render accounts and instructions
@@ -144,7 +136,7 @@ export class Schema {
           accountFiles,
           customFiles,
           this.typeAliases,
-          forceFixable
+          
         )
         // If the type by itself does not need to be fixable, here we detect if
         // it needs to be fixable due to including a fixable type
@@ -166,12 +158,11 @@ export class Schema {
       logTrace('accounts: %O', ix.accounts)
       let code = renderInstruction(
         ix,
-        this.paths.instructionsDir,
         programId,
         accountFiles,
         customFiles,
         this.typeAliases,
-        forceFixable
+        
       )
       if (this.prependGeneratedWarning) {
         code = prependGeneratedWarning(code)
@@ -196,11 +187,9 @@ export class Schema {
       logTrace('type: %O', account.type)
       let code = renderAccount(
         account,
-        this.paths.accountsDir,
         accountFiles,
         customFiles,
         this.typeAliases,
-        forceFixable,
         this.resolveFieldType,
         this.accountsHaveImplicitDiscriminator
       )

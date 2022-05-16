@@ -1,20 +1,13 @@
-import { PathLike } from 'fs'
 import { renderScalarEnums } from './render-enums'
-import { renderDataStruct } from './serdes'
-import { ForceFixable, TypeMapper } from './type-mapper'
+import { TypeMapper } from './type-mapper'
 import {
-  BEET_PACKAGE,
   IdlAccount,
   isIdlTypeDefined,
   PrimitiveTypeKey,
   ResolveFieldType,
-  SOLANA_WEB3_PACKAGE,
-  TypeMappedSerdeField,
 } from './types'
 import {
   accountDiscriminator,
-  anchorDiscriminatorField,
-  anchorDiscriminatorType,
 } from './utils'
 
 function colonSeparatedTypedField(
@@ -34,7 +27,6 @@ class AccountRenderer {
 
   constructor(
     private readonly account: IdlAccount,
-    private readonly fullFileDir: PathLike,
     private readonly hasImplicitDiscriminator: boolean,
     private readonly resolveFieldType: ResolveFieldType,
     private readonly typeMapper: TypeMapper
@@ -53,10 +45,6 @@ class AccountRenderer {
     this.accountDataArgsTypeName = `${this.accountDataClassName}Args`
     this.beetName = `${this.camelAccountName}Beet`
     this.accountDiscriminatorName = `${this.camelAccountName}Discriminator`
-  }
-
-  private serdeProcess() {
-    return this.typeMapper.mapSerdeFields(this.account.type.fields)
   }
 
   // -----------------
@@ -105,17 +93,6 @@ class AccountRenderer {
 
       return `${f.name}: this.${f.name}`
     })
-  }
-
-  // -----------------
-  // Imports
-  // -----------------
-  private renderImports() {
-    const imports = this.typeMapper.importsUsed(
-      this.fullFileDir.toString(),
-      new Set([SOLANA_WEB3_PACKAGE, BEET_PACKAGE])
-    )
-    return imports.join('\n')
   }
 
   // -----------------
@@ -337,69 +314,30 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
   // -----------------
   // Struct
   // -----------------
-  private renderBeet(fields: TypeMappedSerdeField[]) {
-    let discriminatorName: string | undefined
-    let discriminatorField: TypeMappedSerdeField | undefined
-    let discriminatorType: string | undefined
-
-    if (this.hasImplicitDiscriminator) {
-      discriminatorName = 'accountDiscriminator'
-      discriminatorField = this.typeMapper.mapSerdeField(
-        anchorDiscriminatorField('accountDiscriminator')
-      )
-      discriminatorType = anchorDiscriminatorType(
-        this.typeMapper,
-        `account ${this.account.name} discriminant type`
-      )
-    }
-
-    const struct = renderDataStruct({
-      fields,
-      structVarName: this.beetName,
-      className: this.accountDataClassName,
-      argsTypename: this.accountDataArgsTypeName,
-      discriminatorName,
-      discriminatorField,
-      discriminatorType,
-      isFixable: this.typeMapper.usedFixableSerde,
-    })
-    return `
-/**
- * @category Accounts
- * @category generated
- */
-${struct}`.trim()
-  }
 
   render() {
     this.typeMapper.clearUsages()
 
     const typedFields = this.getTypedFields()
-    const beetFields = this.serdeProcess()
     const enums = renderScalarEnums(this.typeMapper.scalarEnumsUsed).join('\n')
-    const imports = this.renderImports()
     const accountDataArgsType = this.renderAccountDataArgsType(typedFields)
     const accountDataClass = this.renderAccountDataClass(typedFields)
-    const beetDecl = this.renderBeet(beetFields)
-    return `${imports}
+    return `
 
 ${enums}
 
 ${accountDataArgsType}
 
 ${accountDataClass}
-
-${beetDecl}`
+`
   }
 }
 
 export function renderAccount(
   account: IdlAccount,
-  fullFileDir: PathLike,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
-  forceFixable: ForceFixable,
   resolveFieldType: ResolveFieldType,
   hasImplicitDiscriminator: boolean
 ) {
@@ -407,11 +345,9 @@ export function renderAccount(
     accountFilesByType,
     customFilesByType,
     typeAliases,
-    forceFixable
   )
   const renderer = new AccountRenderer(
     account,
-    fullFileDir,
     hasImplicitDiscriminator,
     resolveFieldType,
     typeMapper

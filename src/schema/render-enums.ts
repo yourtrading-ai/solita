@@ -7,7 +7,7 @@ export function renderScalarEnum(
   return `
 ${exp}enum ${name} {
   ${variants.join(',\n  ')}    
-}`.trim()
+}`
 }
 
 export function renderScalarEnums(

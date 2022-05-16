@@ -5,24 +5,19 @@ import {
   IdlInstructionAccount,
   SOLANA_SPL_TOKEN_PACKAGE,
   SOLANA_SPL_TOKEN_EXPORT_NAME,
-  TypeMappedSerdeField,
-  SOLANA_WEB3_PACKAGE,
   isIdlInstructionAccountWithDesc,
   PrimitiveTypeKey,
 } from './types'
 import { strict as assert } from 'assert'
-import { ForceFixable, TypeMapper } from './type-mapper'
-import { renderDataStruct } from './serdes'
+import { TypeMapper } from './type-mapper'
 import {
   isKnownPubkey,
   renderKnownPubkeyAccess,
   ResolvedKnownPubkey,
   resolveKnownPubkey,
 } from './known-pubkeys'
-import { BEET_PACKAGE } from '@metaplex-foundation/beet'
 import { renderScalarEnums } from './render-enums'
 import { InstructionDiscriminator } from './instruction-discriminator'
-import { PathLike } from 'fs'
 
 type ProcessedAccountKey = IdlInstructionAccount & {
   knownPubkey?: ResolvedKnownPubkey
@@ -41,7 +36,6 @@ class InstructionRenderer {
 
   constructor(
     readonly ix: IdlInstruction,
-    readonly fullFileDir: PathLike,
     readonly programId: string,
     private readonly typeMapper: TypeMapper
   ) {
@@ -112,10 +106,6 @@ export const ${this.accounts} = [
   // Imports
   // -----------------
   private renderImports(processedKeys: ProcessedAccountKey[]) {
-    const typeMapperImports = this.typeMapper.importsUsed(
-      this.fullFileDir.toString(),
-      new Set([SOLANA_WEB3_PACKAGE, BEET_PACKAGE])
-    )
     const needsSplToken = processedKeys.some(
       (x) => x.knownPubkey?.pack === SOLANA_SPL_TOKEN_PACKAGE
     )
@@ -125,7 +115,7 @@ export const ${this.accounts} = [
 
     return `
 ${splToken}
-${typeMapperImports.join('\n')}`.trim()
+${('\n')}`.trim()
   }
 
   // -----------------
@@ -271,32 +261,7 @@ export type ${this.accountsTypename} = {
   // -----------------
   // Data Struct
   // -----------------
-  private serdeProcess() {
-    return this.typeMapper.mapSerdeFields(this.ix.args)
-  }
 
-  private renderDataStruct(args: TypeMappedSerdeField[]) {
-    const discriminatorField = this.typeMapper.mapSerdeField(
-      this.instructionDiscriminator.getField()
-    )
-    const discriminatorType = this.instructionDiscriminator.renderType()
-    const struct = renderDataStruct({
-      fields: args,
-      discriminatorName: 'instructionDiscriminator',
-      discriminatorField,
-      discriminatorType,
-      structVarName: this.structArgName,
-      argsTypename: this.argsTypename,
-      isFixable: this.typeMapper.usedFixableSerde,
-    })
-    return `
-/**
- * @category Instructions
- * @category ${this.upperCamelIxName}
- * @category generated
- */
-export ${struct}`.trim()
-  }
 
   render() {
     this.typeMapper.clearUsages()
@@ -305,8 +270,6 @@ export ${struct}`.trim()
     const processedKeys = this.processIxAccounts()
     const accountsType = this.renderAccountsType(processedKeys)
     const accounts = this.renderAccounts(processedKeys)
-    const processedArgs = this.serdeProcess()
-    const argsStructType = this.renderDataStruct(processedArgs)
 
     const keys = this.renderIxAccountKeys(processedKeys)
     const accountsParamDoc = this.renderAccountsParamDoc(processedKeys)
@@ -334,7 +297,6 @@ export ${struct}`.trim()
 
 ${enums}
 ${ixArgType}
-${argsStructType}
 ${accountsType}
 ${accounts}
 const ${this.instructionDiscriminatorName} = ${instructionDisc};
@@ -368,22 +330,18 @@ export function create${this.upperCamelIxName}Instruction(
 
 export function renderInstruction(
   ix: IdlInstruction,
-  fullFileDir: PathLike,
   programId: string,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
-  forceFixable: ForceFixable
 ) {
   const typeMapper = new TypeMapper(
     accountFilesByType,
     customFilesByType,
     typeAliases,
-    forceFixable
   )
   const renderer = new InstructionRenderer(
     ix,
-    fullFileDir,
     programId,
     typeMapper
   )

@@ -26,10 +26,7 @@ export class InstructionDiscriminator {
   getField(): IdlInstructionArg {
     if (isShankIdlInstruction(this.ix)) {
       const ty = this.ix.discriminant.type
-      this.typeMapper.assertBeetSupported(
-        ty,
-        `instruction ${this.ix.name} discriminant field`
-      )
+
       return { name: this.fieldName, type: ty }
     }
 
