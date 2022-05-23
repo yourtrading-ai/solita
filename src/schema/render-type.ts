@@ -8,7 +8,6 @@ import {
 import { strict as assert } from 'assert'
 import { renderScalarEnum } from './render-enums'
 import { PathLike } from 'fs'
-
 export function beetVarNameFromTypeName(ty: string) {
   const camelTyName = ty.charAt(0).toLowerCase().concat(ty.slice(1))
   return `${camelTyName}Beet`
@@ -37,27 +36,47 @@ class TypeRenderer {
   // -----------------
   private renderTypeField = (field: IdlField) => {
     const typescriptType = this.typeMapper.map(field.type, field.name)
-    return `${field.name}: ${typescriptType}`
+    return `\t${field.name}: ${typescriptType}`
   }
+  
   private renderTypes() {
+    let enums: string = ''
+    let types: string = ''
+
     if (isIdlTypeEnum(this.ty.type)) {
-      return renderScalarEnum(
-          this.ty.name,
-          this.ty.type.variants.map((x) => x.name),
-          true
+      enums = renderScalarEnum(
+        this.ty.name,
+        this.ty.type.variants.map((x) => x.name),
+        true
       )
+
+      return enums
     }
     const fields = this.ty.type.fields
-        .map((field) => `\t`+this.renderTypeField(field)).join(',\n  ')
+        .map((field) => this.renderTypeField(field)).join(',\n')
+
 
     if(this.ty.type.fields.length == 0){
-      return`type ${this.upperCamelTyName} {}`  + `\n`
+      return ''
     }
     else{
-      return `type ${this.upperCamelTyName} {`+`\n`+
+      types = `type ${this.upperCamelTyName} {`+`\n`+
       `${fields}` + `\n` +
-      `}` + `\n`
+      `}` + `\n\n`
+
+      return types
     }
+  }
+
+  private getVoidList() {
+    let voidList: string = ""
+    if (isIdlTypeEnum(this.ty.type)!) {
+      return ""
+    }
+    if(this.ty.type.fields.length == 0){
+       voidList = this.upperCamelTyName
+    }
+    return voidList
   }
 
   // -----------------
@@ -70,9 +89,9 @@ class TypeRenderer {
       kind === 'struct' || kind === 'enum',
       `only user defined structs or enums are supported, ${this.ty.name} is of type ${this.ty.type.kind}`
     )
-    const types = this.renderTypes()
-
-    return { types }
+    const code = this.renderTypes()
+    const voidList: string = this.getVoidList()
+    return { voidList, code }
   }
 
   /**
@@ -87,9 +106,7 @@ class TypeRenderer {
 
   render() {
     this.typeMapper.clearUsages()
-    const { types } = this.renderDataStructs()
-
-    return `${types}`
+    return this.renderDataStructs()
   }
 }
 
@@ -122,7 +139,7 @@ export function renderType(
     
   )
   const renderer = new TypeRenderer(ty, fullFileDir, typeMapper)
-  const code = renderer.render()
+  const { voidList, code } = renderer.render()
   const isFixable = renderer.typeMapper.usedFixableSerde
-  return { code, isFixable }
+  return { voidList, code, isFixable }
 }

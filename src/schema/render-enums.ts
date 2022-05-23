@@ -6,8 +6,9 @@ export function renderScalarEnum(
   const exp = includeExport ? '' : ''
   return `
 ${exp}enum ${name} {
-  ${variants.join(',\n  ')}    
-}`
+\t${variants.join(',\n\t')}    
+}
+`
 }
 
 export function renderScalarEnums(

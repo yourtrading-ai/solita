@@ -1,5 +1,5 @@
 // @ts-check
-'use strict'
+;('use strict')
 
 const PROGRAM_NAME = 'switchboard_v2'
 const PROGRAM_ID = 'D7ko992PKYLDKFy3fWCQsePvWF3Z7CmvoDHnViGf8bfm'
@@ -79,7 +79,6 @@ async function generateSchema() {
   await gen.renderAndWriteTo(generatedSchemaDir)
 
   console.error('Success!')
-
   process.exit(0)
 }
 

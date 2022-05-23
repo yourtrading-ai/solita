@@ -61,14 +61,8 @@ export class TypeMapper {
   // -----------------
   private mapPrimitiveType(ty: PrimitiveTypeKey, name: string) {
     const mapped = this.primaryTypeMap[ty]
-    try{
-      console.log(mapped.schema)
-    }
-    catch(e){
-      console.log(ty)
-    }
+
     let typescriptType = mapped.schema
-    console.log(mapped.schema)
 
     if (typescriptType == null) {
       logDebug(`No mapped type found for ${name}: ${ty}, using any`)
