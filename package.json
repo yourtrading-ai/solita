@@ -5,7 +5,7 @@
   "main": "dist/src/script.js",
   "types": "dist/src/script.d.ts",
   "bin": {
-    "solita": "dist/src/solita/script.js"
+    "solita": "dist/src/script.js"
   },
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
