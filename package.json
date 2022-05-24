@@ -2,10 +2,10 @@
   "name": "@metaplex-foundation/solita",
   "version": "0.7.0",
   "description": "Generates SDK API from solana contract IDL.",
-  "main": "dist/src/solita.js",
-  "types": "dist/src/solita.d.ts",
+  "main": "dist/src/solita/solita.js && dist/src/schema/schema.js",
+  "types": "dist/src/solita/solita.d.ts && dist/src/schema/schema.d.ts",
   "bin": {
-    "solita": "dist/src/cli/solita.js"
+    "solita": "dist/src/solita/cli/solita.js && dist/src/schema/cli/solita.js"
   },
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
