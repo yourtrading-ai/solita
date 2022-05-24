@@ -5,7 +5,7 @@ const PROGRAM_NAME = 'switchboard_v2'
 const PROGRAM_ID = 'D7ko992PKYLDKFy3fWCQsePvWF3Z7CmvoDHnViGf8bfm'
 
 const path = require('path')
-const generatedIdlDir = path.join(__dirname, '..', 'src', 'solita', 'idl')
+const generatedIdlDir = path.join(__dirname, '..', 'solita', 'idl')
 const generatedSDKDir = path.join(
   __dirname,
   '..',
@@ -23,12 +23,12 @@ const generatedSchemaDir = path.join(
 )
 
 const { spawn } = require('child_process')
-const { Solita } = require('../dist/src/solita/solita')
-const { Schema } = require('../dist/src/schema/schema')
+const { Solita } = require('../../dist/src/solita/solita')
+const { Schema } = require('../../dist/src/schema/schema')
 const { writeFile } = require('fs/promises')
 
 const anchor = spawn('anchor', ['build', '--idl', generatedIdlDir])
-  .on('error', (err) => {
+  .on('error', (err: any) => {
     console.error(err)
     // @ts-ignore this err does have a code
     if (err.code === 'ENOENT') {
@@ -47,8 +47,8 @@ const anchor = spawn('anchor', ['build', '--idl', generatedIdlDir])
     generateSchema()
   })
 
-anchor.stdout.on('data', (buf) => console.log(buf.toString('utf8')))
-anchor.stderr.on('data', (buf) => console.error(buf.toString('utf8')))
+anchor.stdout.on('data', (buf: any) => console.log(buf.toString('utf8')))
+anchor.stderr.on('data', (buf: any) => console.error(buf.toString('utf8')))
 
 async function generateTypeScriptSDK() {
   console.error('Generating TypeScript SDK to %s', generatedSDKDir)
@@ -82,7 +82,7 @@ async function generateSchema() {
   process.exit(0)
 }
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
