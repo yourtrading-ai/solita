@@ -5,3 +5,4 @@ test/integration/output
 test/anchor-examples/
 output_solita/
 node_modules/
+generated

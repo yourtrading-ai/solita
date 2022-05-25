@@ -1,13 +1,13 @@
 import test, { Test } from 'tape'
-import { renderInstruction } from '../src/render-instruction'
-import { SerdePackage } from '../src/serdes'
-import { FORCE_FIXABLE_NEVER } from '../src/type-mapper'
+import { renderInstruction } from '../src/solita/render-instruction'
+import { SerdePackage } from '../src/solita/serdes'
+import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
 import {
   BEET_PACKAGE,
   BEET_SOLANA_PACKAGE,
   IdlInstruction,
   SOLANA_WEB3_PACKAGE,
-} from '../src/types'
+} from '../src/solita/types'
 import {
   analyzeCode,
   verifyImports,

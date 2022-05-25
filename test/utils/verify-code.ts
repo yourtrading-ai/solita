@@ -10,7 +10,7 @@ import { ESLint } from 'eslint'
 import {
   extractSerdePackageFromImportStatment,
   SerdePackage,
-} from '../../src/serdes'
+} from '../../src/solita/serdes'
 import recursiveReaddir from 'recursive-readdir'
 
 import { exec as execCb } from 'child_process'

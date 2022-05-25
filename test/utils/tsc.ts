@@ -1,6 +1,6 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
-import packageDirectory from 'pkg-dir'
+import {packageDirectory} from 'pkg-dir'
 
 import { spawn } from 'child_process'
 
