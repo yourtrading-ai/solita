@@ -5,7 +5,7 @@
   "main": "dist/index.js",   
   "module": "dist/index.js",   
   "types": "dist/index.d.js",   
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
     "preversion": "yarn check:publish-ready",
