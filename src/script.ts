@@ -5,7 +5,7 @@ const PROGRAM_NAME = 'switchboard_v2'
 const PROGRAM_ID = 'D7ko992PKYLDKFy3fWCQsePvWF3Z7CmvoDHnViGf8bfm'
 
 const path = require('path')
-const generatedIdlDir = path.join(__dirname, '..', 'solita', 'idl')
+const generatedIdlDir = path.join(__dirname, '..', '..', 'src', 'schema', 'idl')
 const generatedSDKDir = path.join(
   __dirname,
   '..',
