@@ -1,4 +1,4 @@
-import { IdlError } from './types'
+import { IdlError } from '../'
 
 function asHex(code: number) {
   return `0x${code.toString(16)}`

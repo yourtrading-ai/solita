@@ -12,23 +12,23 @@ import {
   isIdlTypeEnum,
   isShankIdl,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
+
 import {
   logDebug,
   logError,
   logTrace,
   prependGeneratedWarning,
   prepareTargetDir,
-} from './utils'
+} from '../solita/utils'
+
 import { format, Options } from 'prettier'
-import { Paths } from './paths'
+import { Paths } from '../solita/paths'
 /*
 import { validate } from 'graphql/validation' // CommonJS
 import  { buildSchema, parse } from 'graphql'
 */
 import  { validateSchema, buildSchema } from 'graphql'
-
-export * from './types'
 
 export class Schema {
   private readonly formatCode: boolean

@@ -1,6 +1,6 @@
 import { TypeMapper } from './type-mapper'
+import { IdlAccount } from "../"
 import {
-  IdlAccount,
   PrimitiveTypeKey,
   ResolveFieldType,
 } from './types'

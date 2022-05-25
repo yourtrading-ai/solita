@@ -3,12 +3,12 @@ import {
   IdlInstructionAccount,
   IdlInstructionArg,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
 import { TypeMapper } from './type-mapper'
 import {
   ResolvedKnownPubkey,
   resolveKnownPubkey,
-} from './known-pubkeys'
+} from '../solita/known-pubkeys'
 
 type ProcessedAccountKey = IdlInstructionAccount & {
   knownPubkey?: ResolvedKnownPubkey
