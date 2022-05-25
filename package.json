@@ -2,9 +2,9 @@
   "name": "@metaplex-foundation/solita",
   "version": "0.7.0",
   "description": "Generates SDK API from solana contract IDL.",
-  "main": "dist/index.js",   
-  "module": "dist/index.js",   
-  "types": "dist/index.d.js",   
+  "main": "dist/src/index.js",   
+  "module": "dist/src/index.js",   
+  "types": "dist/src/index.d.js",   
   "type": "module",
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
