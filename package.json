@@ -9,6 +9,8 @@
   },
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
+    "clean:all": "rm -rf ./node_modules && rm -rf ./dist && rm -rf package-lock.json && rm -rf ./generated",
+    "run:script": "npm run clean:all && npm install --legacy-peer-deps && npm run build && node ./scripts/api-gen-ts.js",
     "preversion": "yarn check:publish-ready",
     "prepare": "npm run build",
     "prepublishOnly": "yarn check:publish-ready",
