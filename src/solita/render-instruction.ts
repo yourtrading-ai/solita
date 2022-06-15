@@ -42,7 +42,6 @@ class InstructionRenderer {
   constructor(
     readonly ix: IdlInstruction,
     readonly fullFileDir: PathLike,
-    readonly programId: string,
     private readonly typeMapper: TypeMapper
   ) {
     this.upperCamelIxName = ix.name
@@ -356,7 +355,6 @@ export function create${this.upperCamelIxName}Instruction(
   });
   const keys: ${web3}.AccountMeta[] = ${keys}
   const ix = new ${web3}.TransactionInstruction({
-    programId: new ${web3}.PublicKey('${this.programId}'),
     keys,
     data
   });
@@ -369,7 +367,6 @@ export function create${this.upperCamelIxName}Instruction(
 export function renderInstruction(
   ix: IdlInstruction,
   fullFileDir: PathLike,
-  programId: string,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
@@ -384,7 +381,6 @@ export function renderInstruction(
   const renderer = new InstructionRenderer(
     ix,
     fullFileDir,
-    programId,
     typeMapper
   )
   return renderer.render()

@@ -87,7 +87,6 @@ export class Schema {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
-    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -157,7 +156,6 @@ export class Schema {
       logTrace('accounts: %O', ix.accounts)
       let code = renderInstruction(
         ix,
-        programId,
         accountFiles,
         customFiles,
         this.typeAliases,

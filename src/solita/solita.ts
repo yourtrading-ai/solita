@@ -103,7 +103,6 @@ export class Solita {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
-    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -190,7 +189,6 @@ export class Solita {
       let code = renderInstruction(
         ix,
         this.paths.instructionsDir,
-        programId,
         accountFiles,
         customFiles,
         this.typeAliases,
