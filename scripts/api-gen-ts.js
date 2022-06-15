@@ -52,7 +52,6 @@ const anchor = spawn('anchor', ['build', '--idl', generatedIdlDir])
     )
     generateTypeScriptSDK()
     generateSchema()
-    generateIndexer()
   })
 
 anchor.stdout.on('data', (buf) => console.log(buf.toString('utf8')))
@@ -63,10 +62,6 @@ async function generateTypeScriptSDK() {
   const generatedIdlPath = path.join(generatedIdlDir, `${PROGRAM_NAME}.json`)
 
   const idl = require(generatedIdlPath)
-  if (idl.metadata?.address == null) {
-    idl.metadata = { ...idl.metadata, address: PROGRAM_ID }
-    await writeFile(generatedIdlPath, JSON.stringify(idl, null, 2))
-  }
   const gen = new Solita(idl, { formatCode: true })
   await gen.renderAndWriteTo(generatedSDKDir)
 
@@ -87,23 +82,6 @@ async function generateSchema() {
   await gen.renderAndWriteTo(generatedSchemaDir)
 
   console.error('Success!')
-}
-
-async function generateIndexer() {
-  await sleep(2000) // weird but easy functional solution to manage multithread processes
-  console.error('Generating Indexer to %s', generatedIndexerDir)
-  const generatedIdlPath = path.join(generatedIdlDir, `${PROGRAM_NAME}.json`)
-
-  const idl = require(generatedIdlPath)
-  if (idl.metadata?.address == null) {
-    idl.metadata = { ...idl.metadata, address: PROGRAM_ID }
-    await writeFile(generatedIdlPath, JSON.stringify(idl, null, 2))
-  }
-  const gen = new Indexer(idl, { formatCode: true })
-  await gen.renderAndWriteTo(generatedIndexerDir)
-
-  console.error('Success!')
-  process.exit(0)
 }
 
 function sleep(ms) {

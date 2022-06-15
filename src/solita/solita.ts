@@ -367,7 +367,6 @@ export class Solita {
   async writeMainIndex(reexports: string[]) {
     assert(this.paths != null, 'should have set paths')
 
-    const programAddress = this.idl.metadata.address
     const reexportCode = this.renderImportIndex(reexports.sort(), 'main')
     const imports = `import { PublicKey } from '${SOLANA_WEB3_PACKAGE}'`
     const programIdConsts = `
@@ -377,7 +376,6 @@ export class Solita {
  * @category constants
  * @category generated
  */
-export const PROGRAM_ADDRESS = '${programAddress}'
 
 /**
  * Program public key
@@ -385,7 +383,6 @@ export const PROGRAM_ADDRESS = '${programAddress}'
  * @category constants
  * @category generated
  */
-export const PROGRAM_ID = new PublicKey(PROGRAM_ADDRESS)
 `
     let code = `
 ${imports}
