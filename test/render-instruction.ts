@@ -13,7 +13,6 @@ import {
   verifyImports,
   verifySyntacticCorrectness,
 } from './utils/verify-code'
-const PROGRAM_ID = 'testprogram'
 
 const DIAGNOSTIC_ON = false
 const INSTRUCTION_FILE_DIR = '/root/app/instructions/'
@@ -32,7 +31,6 @@ async function checkRenderedIx(
   const ts = renderInstruction(
     ix,
     INSTRUCTION_FILE_DIR,
-    PROGRAM_ID,
     new Map(),
     new Map(),
     new Map(),
