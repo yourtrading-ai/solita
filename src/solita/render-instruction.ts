@@ -336,7 +336,7 @@ ${ixArgType}
 ${argsStructType}
 ${accountsType}
 ${accounts}
-const ${this.instructionDiscriminatorName} = ${instructionDisc};
+export const ${this.instructionDiscriminatorName} = ${instructionDisc};
 
 /**
  * Creates a _${this.upperCamelIxName}_ instruction.
@@ -355,6 +355,7 @@ export function create${this.upperCamelIxName}Instruction(
   });
   const keys: ${web3}.AccountMeta[] = ${keys}
   const ix = new ${web3}.TransactionInstruction({
+    programId: new ${web3}.PublicKey('NONE'),
     keys,
     data
   });

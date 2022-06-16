@@ -20,9 +20,6 @@ const generatedSchemaDir = path.join(
   '..',
   'output',
   PROGRAM_NAME,
-  'indexer',
-  'src',
-  'graphql',
   'schema'
 )
 
