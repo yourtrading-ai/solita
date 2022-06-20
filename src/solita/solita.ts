@@ -366,7 +366,7 @@ export class Solita {
 
     const reexportCode = this.renderExportsIndex(reexports.sort(), 'main')
     const importsCode = this.renderImports(Object.keys(instructions).sort(), Object.keys(accounts).sort(), Object.keys(types).sort())
-    const unionInstructions = this.renderInstructionUnion(Object.keys(instructions).sort(), 'ParsedItructions')
+    const unionInstructions = this.renderInstructionUnion(Object.keys(instructions).sort(), 'ParsedInstructions')
     const unionAccounts = this.renderUnions(Object.keys(accounts).sort(), 'ParsedAccounts')
     const unionTypes = this.renderUnions(Object.keys(types).sort(), 'ParsedTypes')
 
