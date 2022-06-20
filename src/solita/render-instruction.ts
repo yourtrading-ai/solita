@@ -338,6 +338,12 @@ ${accountsType}
 ${accounts}
 export const ${this.instructionDiscriminatorName} = ${instructionDisc};
 
+export type ${this.upperCamelIxName}Instruction = {
+  programId: web3.PublicKey,
+  keys: web3.AccountMeta[],
+  data: Buffer
+}
+
 /**
  * Creates a _${this.upperCamelIxName}_ instruction.
 ${accountsParamDoc}${createInstructionArgsComment}
@@ -347,14 +353,14 @@ ${accountsParamDoc}${createInstructionArgsComment}
  */
 export function create${this.upperCamelIxName}Instruction(
   ${accountsArg}${createInstructionArgs}
-) {
+) : ${this.upperCamelIxName}Instruction{
   ${accountsDestructure}
   const [data ] = ${this.structArgName}.serialize({ 
     instructionDiscriminator: ${this.instructionDiscriminatorName},
     ${createInstructionArgsSpread}
   });
   const keys: ${web3}.AccountMeta[] = ${keys}
-  const ix = new ${web3}.TransactionInstruction({
+  const ix: ${this.upperCamelIxName}Instruction = new ${web3}.TransactionInstruction({
     programId: new ${web3}.PublicKey('NONE'),
     keys,
     data
