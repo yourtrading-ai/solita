@@ -368,6 +368,7 @@ export class Solita {
     const importsCode = this.renderImports(Object.keys(instructions).sort(), Object.keys(accounts).sort(), Object.keys(types).sort())
     const unionInstructions = this.renderInstructionUnion(Object.keys(instructions).sort(), 'ParsedInstructions')
     const unionAccounts = this.renderUnions(Object.keys(accounts).sort(), 'ParsedAccounts')
+    const unionAccountsData = this.renderUnionsAccountsData(Object.keys(accounts).sort(), 'ParsedAccountsData')
     const unionTypes = this.renderUnions(Object.keys(types).sort(), 'ParsedTypes')
 
     let code = `
@@ -375,6 +376,7 @@ ${reexportCode}
 ${importsCode}
 ${unionInstructions}
 ${unionAccounts}
+${unionAccountsData}
 ${unionTypes}
 `.trim()
 
@@ -403,7 +405,7 @@ ${unionTypes}
     code += `\n} from './instructions';\n\nimport {\n`
 
     for(let i = 0; i < accounts.length; i++){
-      code += accounts[i] + ',\n'
+      code += accounts[i] + ',\n' + accounts[i] + 'Args ,\n'
     }
     code = code.slice(0, code.length-2)
     code += `\n} from './accounts';\n\nimport {\n`
@@ -441,6 +443,21 @@ ${unionTypes}
   private renderUnions(modules: string[], label: string) {
     let code = `export type ${label} =\n`
     code += modules.map((x) => `${x.charAt(0).toUpperCase().concat(x.slice(1))} |`).join('\n')
+    code = code.slice(0, code.length-2)
+    if (this.formatCode) {
+      try {
+        code = format(code, this.formatOpts)
+      } catch (err) {
+        logError(`Failed to format ${label} imports`)
+        logError(err)
+      }
+    }
+    return code
+  }
+
+  private renderUnionsAccountsData(modules: string[], label: string) {
+    let code = `export type ${label} =\n`
+    code += modules.map((x) => `${x.charAt(0).toUpperCase().concat(x.slice(1))}Args |`).join('\n')
     code = code.slice(0, code.length-2)
     if (this.formatCode) {
       try {
