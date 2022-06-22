@@ -19,13 +19,6 @@ export async function enhanceIdl(
   const idl = require(idlPath)
 
   if (isSolitaConfigAnchor(config)) {
-    idl.metadata = {
-      ...idl.metadata,
-      address: config.programId,
-      origin: config.idlGenerator,
-      binaryVersion,
-      libVersion,
-    }
   } else if (isSolitaConfigShank(config)) {
     idl.metadata = {
       ...idl.metadata,

@@ -13,7 +13,6 @@ import {
   isIdlTypeDefined,
   isIdlTypeEnum,
   isShankIdl,
-  SOLANA_WEB3_PACKAGE,
   PrimitiveTypeKey,
 } from './types'
 import {
@@ -103,7 +102,6 @@ export class Solita {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
-    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -190,7 +188,6 @@ export class Solita {
       let code = renderInstruction(
         ix,
         this.paths.instructionsDir,
-        programId,
         accountFiles,
         customFiles,
         this.typeAliases,
@@ -281,7 +278,7 @@ export class Solita {
       await this.writeErrors(errors)
     }
 
-    await this.writeMainIndex(reexports)
+    await this.writeMainIndex(reexports, instructions, accounts, types)
   }
 
   // -----------------
@@ -320,7 +317,7 @@ export class Solita {
       await fs.writeFile(this.paths.accountFile(name), code, 'utf8')
     }
     logDebug('Writing index.ts exporting all accounts')
-    const indexCode = this.renderImportIndex(
+    const indexCode = this.renderExportsIndex(
       Object.keys(accounts).sort(),
       'accounts'
     )
@@ -344,7 +341,7 @@ export class Solita {
     // NOTE: this allows account types to be referenced via `defined.<AccountName>`, however
     // it would break if we have an account used that way, but no types
     // If that occurs we need to generate the `types/index.ts` just reexporting accounts
-    const indexCode = this.renderImportIndex(reexports.sort(), 'types')
+    const indexCode = this.renderExportsIndex(reexports.sort(), 'types')
     await fs.writeFile(this.paths.typeFile('index'), indexCode, 'utf8')
   }
 
@@ -364,48 +361,104 @@ export class Solita {
   // Main Index File
   // -----------------
 
-  async writeMainIndex(reexports: string[]) {
+  async writeMainIndex(reexports: string[], instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string> ) {
     assert(this.paths != null, 'should have set paths')
 
-    const programAddress = this.idl.metadata.address
-    const reexportCode = this.renderImportIndex(reexports.sort(), 'main')
-    const imports = `import { PublicKey } from '${SOLANA_WEB3_PACKAGE}'`
-    const programIdConsts = `
-/**
- * Program address
- *
- * @category constants
- * @category generated
- */
-export const PROGRAM_ADDRESS = '${programAddress}'
+    const reexportCode = this.renderExportsIndex(reexports.sort(), 'main')
+    const importsCode = this.renderImports(Object.keys(instructions).sort(), Object.keys(accounts).sort(), Object.keys(types).sort())
+    const unionInstructions = this.renderInstructionUnion(Object.keys(instructions).sort(), 'ParsedInstructions')
+    const unionAccounts = this.renderUnions(Object.keys(accounts).sort(), 'ParsedAccounts')
+    const unionAccountsData = this.renderUnionsAccountsData(Object.keys(accounts).sort(), 'ParsedAccountsData')
+    const unionTypes = this.renderUnions(Object.keys(types).sort(), 'ParsedTypes')
 
-/**
- * Program public key
- *
- * @category constants
- * @category generated
- */
-export const PROGRAM_ID = new PublicKey(PROGRAM_ADDRESS)
-`
     let code = `
-${imports}
 ${reexportCode}
-${programIdConsts}
+${importsCode}
+${unionInstructions}
+${unionAccounts}
+${unionAccountsData}
+${unionTypes}
 `.trim()
 
+    await fs.writeFile(path.join(this.paths.root, `index.ts`), code, 'utf8')
+  }
+
+  private renderExportsIndex(modules: string[], label: string) {
+    let code = modules.map((x) => `export * from './${x}';`).join('\n')
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)
       } catch (err) {
-        logError(`Failed to format mainIndex`)
+        logError(`Failed to format ${label} imports`)
         logError(err)
       }
     }
-    await fs.writeFile(path.join(this.paths.root, `index.ts`), code, 'utf8')
+    return code
   }
 
-  private renderImportIndex(modules: string[], label: string) {
-    let code = modules.map((x) => `export * from './${x}';`).join('\n')
+  private renderImports(instructions: string[], accounts: string[], types: string[]) {
+    let code = `import {\n`
+    for(let i = 0; i < instructions.length; i++){
+      code += instructions[i].charAt(0).toUpperCase().concat(instructions[i].slice(1)) + 'Instruction,\n'
+    }
+    code = code.slice(0, code.length-2)
+    code += `\n} from './instructions';\n\nimport {\n`
+
+    for(let i = 0; i < accounts.length; i++){
+      code += accounts[i] + ',\n' + accounts[i] + 'Args ,\n'
+    }
+    code = code.slice(0, code.length-2)
+    code += `\n} from './accounts';\n\nimport {\n`
+
+    for(let i = 0; i < types.length; i++){
+      code += types[i] + ',\n'
+    }
+    code = code.slice(0, code.length-2)
+    code += `\n} from './types';`
+    if (this.formatCode) {
+      try {
+        code = format(code, this.formatOpts)
+      } catch (err) {
+        logError(err)
+      }
+    }
+    return code
+  }
+
+  private renderInstructionUnion(modules: string[], label: string) {
+    let code = `export type ${label} =\n`
+    code += modules.map((x) => `${x.charAt(0).toUpperCase().concat(x.slice(1))}Instruction |`).join('\n')
+    code = code.slice(0, code.length-2)
+    if (this.formatCode) {
+      try {
+        code = format(code, this.formatOpts)
+      } catch (err) {
+        logError(`Failed to format ${label} imports`)
+        logError(err)
+      }
+    }
+    return code
+  }
+
+  private renderUnions(modules: string[], label: string) {
+    let code = `export type ${label} =\n`
+    code += modules.map((x) => `${x.charAt(0).toUpperCase().concat(x.slice(1))} |`).join('\n')
+    code = code.slice(0, code.length-2)
+    if (this.formatCode) {
+      try {
+        code = format(code, this.formatOpts)
+      } catch (err) {
+        logError(`Failed to format ${label} imports`)
+        logError(err)
+      }
+    }
+    return code
+  }
+
+  private renderUnionsAccountsData(modules: string[], label: string) {
+    let code = `export type ${label} =\n`
+    code += modules.map((x) => `${x.charAt(0).toUpperCase().concat(x.slice(1))}Args |`).join('\n')
+    code = code.slice(0, code.length-2)
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)

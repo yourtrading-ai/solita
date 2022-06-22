@@ -42,7 +42,6 @@ class InstructionRenderer {
   constructor(
     readonly ix: IdlInstruction,
     readonly fullFileDir: PathLike,
-    readonly programId: string,
     private readonly typeMapper: TypeMapper
   ) {
     this.upperCamelIxName = ix.name
@@ -337,7 +336,13 @@ ${ixArgType}
 ${argsStructType}
 ${accountsType}
 ${accounts}
-const ${this.instructionDiscriminatorName} = ${instructionDisc};
+export const ${this.instructionDiscriminatorName} = ${instructionDisc};
+
+export type ${this.upperCamelIxName}Instruction = {
+  programId: web3.PublicKey,
+  keys: web3.AccountMeta[],
+  data: Buffer
+}
 
 /**
  * Creates a _${this.upperCamelIxName}_ instruction.
@@ -348,15 +353,15 @@ ${accountsParamDoc}${createInstructionArgsComment}
  */
 export function create${this.upperCamelIxName}Instruction(
   ${accountsArg}${createInstructionArgs}
-) {
+) : ${this.upperCamelIxName}Instruction{
   ${accountsDestructure}
   const [data ] = ${this.structArgName}.serialize({ 
     instructionDiscriminator: ${this.instructionDiscriminatorName},
     ${createInstructionArgsSpread}
   });
   const keys: ${web3}.AccountMeta[] = ${keys}
-  const ix = new ${web3}.TransactionInstruction({
-    programId: new ${web3}.PublicKey('${this.programId}'),
+  const ix: ${this.upperCamelIxName}Instruction = new ${web3}.TransactionInstruction({
+    programId: new ${web3}.PublicKey('NONE'),
     keys,
     data
   });
@@ -369,7 +374,6 @@ export function create${this.upperCamelIxName}Instruction(
 export function renderInstruction(
   ix: IdlInstruction,
   fullFileDir: PathLike,
-  programId: string,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
@@ -384,7 +388,6 @@ export function renderInstruction(
   const renderer = new InstructionRenderer(
     ix,
     fullFileDir,
-    programId,
     typeMapper
   )
   return renderer.render()

@@ -1,21 +1,10 @@
 import {
-  IdlEnumVariant,
-  IdlType,
-  IdlTypeArray,
-  IdlTypeDefined,
-  IdlTypeEnum,
-  IdlTypeOption,
-  IdlTypeVec,
-  isIdlTypeArray,
-  isIdlTypeDefined,
-  isIdlTypeEnum,
-  isIdlTypeOption,
-  isIdlTypeVec,
   PrimitiveTypeKey,
   supportedTypeMap,
   PrimaryTypeMap
 } from './types'
-import { getOrCreate, logDebug } from './utils'
+import { isIdlTypeOption, isIdlTypeVec, isIdlTypeArray, isIdlTypeDefined, isIdlTypeEnum, IdlType, IdlTypeEnum, IdlEnumVariant, IdlTypeOption, IdlTypeVec, IdlTypeArray, IdlTypeDefined } from "../"
+import { getOrCreate, logDebug } from '../solita/utils'
 import { strict as assert } from 'assert'
 
 

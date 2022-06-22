@@ -3,12 +3,12 @@ import {
   IdlInstructionAccount,
   IdlInstructionArg,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
 import { TypeMapper } from './type-mapper'
 import {
   ResolvedKnownPubkey,
   resolveKnownPubkey,
-} from './known-pubkeys'
+} from '../solita/known-pubkeys'
 
 type ProcessedAccountKey = IdlInstructionAccount & {
   knownPubkey?: ResolvedKnownPubkey
@@ -26,7 +26,6 @@ class InstructionRenderer {
 
   constructor(
     readonly ix: IdlInstruction,
-    readonly programId: string,
     private readonly typeMapper: TypeMapper
   ) {
     this.upperCamelIxName = ix.name
@@ -138,7 +137,6 @@ type ${this.upperCamelIxName}Instruction implements Instruction {
 
 export function renderInstruction(
   ix: IdlInstruction,
-  programId: string,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
@@ -151,7 +149,6 @@ export function renderInstruction(
   )
   const renderer = new InstructionRenderer(
     ix,
-    programId,
     typeMapper
   )
   return renderer.render(listVoid)

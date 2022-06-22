@@ -4,7 +4,7 @@ import {
   IdlField,
   isIdlTypeEnum,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
 import { strict as assert } from 'assert'
 import { renderScalarEnum } from './render-enums'
 import { PathLike } from 'fs'

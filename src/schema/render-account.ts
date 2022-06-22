@@ -1,8 +1,7 @@
 import { TypeMapper } from './type-mapper'
+import { IdlAccount } from "../"
 import {
-  IdlAccount,
   PrimitiveTypeKey,
-  ResolveFieldType,
 } from './types'
 
 function colonSeparatedTypedField(
@@ -81,8 +80,6 @@ export function renderAccount(
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
-  resolveFieldType: ResolveFieldType,
-  hasImplicitDiscriminator: boolean
 ) {
   const typeMapper = new TypeMapper(
     accountFilesByType,

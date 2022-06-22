@@ -10,39 +10,34 @@ import {
   Idl,
   isIdlDefinedType,
   isIdlTypeEnum,
-  isShankIdl,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
+
 import {
   logDebug,
   logError,
   logTrace,
   prependGeneratedWarning,
   prepareTargetDir,
-} from './utils'
+} from '../solita/utils'
+
 import { format, Options } from 'prettier'
-import { Paths } from './paths'
+import { Paths } from '../solita/paths'
 /*
 import { validate } from 'graphql/validation' // CommonJS
 import  { buildSchema, parse } from 'graphql'
 */
 import  { validateSchema, buildSchema } from 'graphql'
 
-export * from './types'
-
 export class Schema {
   private readonly formatCode: boolean
   private readonly formatOpts: Options
-  private readonly accountsHaveImplicitDiscriminator: boolean
   private readonly prependGeneratedWarning: boolean
   private readonly typeAliases: Map<string, PrimitiveTypeKey>
   private paths: Paths | undefined
   constructor(
     private readonly idl: Idl,
     {
-      formatCode = false,
-      formatOpts = {},
-      prependGeneratedWarning = true,
       typeAliases: aliases = {},
     }: {
       formatCode?: boolean
@@ -54,7 +49,6 @@ export class Schema {
     this.formatCode = false
     this.formatOpts = {}
     this.prependGeneratedWarning = false
-    this.accountsHaveImplicitDiscriminator = !isShankIdl(idl)
     this.typeAliases = new Map(Object.entries(aliases))
   }
 
@@ -93,7 +87,6 @@ export class Schema {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
-    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -163,7 +156,6 @@ export class Schema {
       logTrace('accounts: %O', ix.accounts)
       let code = renderInstruction(
         ix,
-        programId,
         accountFiles,
         customFiles,
         this.typeAliases,
@@ -184,8 +176,6 @@ export class Schema {
         accountFiles,
         customFiles,
         this.typeAliases,
-        this.resolveFieldType,
-        this.accountsHaveImplicitDiscriminator
       )
       if (this.prependGeneratedWarning) {
         code = prependGeneratedWarning(code)
@@ -223,9 +213,9 @@ export class Schema {
 
   async renderAndWriteTo(outputDir: PathLike) {
     this.paths = new Paths(outputDir)
-    const { instructions, accounts, types, errors } = await this.renderCode()
+    const { instructions, accounts, types } = await this.renderCode()
 
-    await this.writeSchema(instructions, accounts, types, errors)
+    await this.writeSchema(instructions, accounts, types)
   }
 
   // -----------------
@@ -274,7 +264,7 @@ export class Schema {
   // Main Index File
   // -----------------
 
-  async writeSchema(instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string>, errors: string | null) {
+  async writeSchema(instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string>) {
     assert(this.paths != null, 'should have set paths')
     let schema = `
 scalar Datetime
