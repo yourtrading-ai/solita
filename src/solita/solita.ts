@@ -384,7 +384,8 @@ ${unionTypes}
   }
 
   private renderExportsIndex(modules: string[], label: string) {
-    let code = modules.map((x) => `export * from './${x}/index.js';`).join('\n')
+    const extension = label === 'main' ? '/index.js' : '.js'
+    let code = modules.map((x) => `export * from './${x}${extension}';`).join('\n')
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)
