@@ -384,7 +384,7 @@ ${unionTypes}
   }
 
   private renderExportsIndex(modules: string[], label: string) {
-    let code = modules.map((x) => `export * from './${x}';`).join('\n')
+    let code = modules.map((x) => `export * from './${x}/index.js';`).join('\n')
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)
@@ -402,19 +402,19 @@ ${unionTypes}
       code += instructions[i].charAt(0).toUpperCase().concat(instructions[i].slice(1)) + 'Instruction,\n'
     }
     code = code.slice(0, code.length-2)
-    code += `\n} from './instructions';\n\nimport {\n`
+    code += `\n} from './instructions/index.js';\n\nimport {\n`
 
     for(let i = 0; i < accounts.length; i++){
       code += accounts[i] + ',\n' + accounts[i] + 'Args ,\n'
     }
     code = code.slice(0, code.length-2)
-    code += `\n} from './accounts';\n\nimport {\n`
+    code += `\n} from './accounts/index.js';\n\nimport {\n`
 
     for(let i = 0; i < types.length; i++){
       code += types[i] + ',\n'
     }
     code = code.slice(0, code.length-2)
-    code += `\n} from './types';`
+    code += `\n} from './types/index.js';`
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)
@@ -472,8 +472,8 @@ ${unionTypes}
 
   private renderImportInstructionIndex(modules: string[], label: string) {
     let count = 0
-    let code = modules.map((x) => `export * from './${x}';`).join('\n') + '\n' + '\n'
-    code = code + modules.map((x) => `import * as ${x} from './${x}';`).join('\n')  + '\n' + '\n'
+    let code = modules.map((x) => `export * from './${x}.js';`).join('\n') + '\n' + '\n'
+    code = code + modules.map((x) => `import * as ${x} from './${x}.js';`).join('\n')  + '\n' + '\n'
 
     code = code + `export enum InstructionType {`+'\n'
     code = code + modules.map((x) => '\t' + `${x} = '${x}',`).join('\n') + '\n' + '}' + '\n' + '\n'
