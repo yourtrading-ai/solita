@@ -56,7 +56,7 @@ class AccountRenderer {
       .join('\n\t')
 
     return `
-type ${this.accountDataArgsTypeName} {
+type ${this.accountDataArgsTypeName} implements Account {
 \t${renderedFields}
 }\n`
   }
