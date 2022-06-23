@@ -339,9 +339,11 @@ export class TypeMapper {
       if (!relPath.startsWith('.')) {
         relPath = `./${relPath}`
       }
-      const importPath = withoutTsExtension(relPath)
+      if (!relPath.endsWith('.ts'))
+        relPath += '/index'
+      relPath = withoutTsExtension(relPath) + '.js'
       renderedImports.push(
-        `import { ${Array.from(imports).join(', ')} }  from '${importPath}';`
+        `import { ${Array.from(imports).join(', ')} }  from '${relPath}';`
       )
     }
     return renderedImports
