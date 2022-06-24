@@ -62,11 +62,7 @@ export function serdePackageTypePrefix(pack: SerdePackage | undefined): string {
 }
 
 export function isKnownSerdePackage(pack: string): pack is SerdePackage {
-  return (
-    pack === BEET_PACKAGE ||
-    pack === BEET_SOLANA_PACKAGE ||
-    pack === SOLANA_WEB3_PACKAGE
-  )
+  return true
 }
 
 export function assertKnownSerdePackage(
