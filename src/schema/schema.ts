@@ -251,13 +251,11 @@ export class Schema {
     assert(this.paths != null, 'should have set paths')
 
     let outputcode = ""
-    let query = ""
     for (const [name, code] of Object.entries(accounts)) {
       logDebug('Writing accounts: %s', name)
       outputcode += code
-      query += "\t" + this.lowerCase(name) + ":" + " [" + name + "!]!\n"
     }
-    return [outputcode, query]
+    return outputcode
   }
 
   // -----------------
@@ -272,8 +270,21 @@ scalar PublicKey
 scalar GraphQLLong
 scalar Null
 
+schema {
+\tquery: Query
+}
+
 type Query {
 \tintructionHistory: [Instruction!]!
+\taccounts(type: AccountType, address: String): [Account!]!
+}
+
+type AccessStats {
+\taccesses1h: InstructionStats!
+\taccesses24h: InstructionStats!
+\taccesses7d: InstructionStats!
+\taccessesTotal: InstructionStats!
+}
 `
     let code = ''
     await prepareTargetDir(this.paths.root)
@@ -285,18 +296,45 @@ type Query {
 
     if (Object.keys(instructions).length !== 0) {
       code += '\n\n#*--------INSTRUCTIONS--------*#\n\n\n'
-      code += `interface Instruction {
-\tsignature: String
-\ttimestamp: Datetime
-}`
+      let stats =`type InstructionStats {
+`
+      schema += `interface Instruction {
+\tid: String!
+\ttype: InstructionType!
+\ttimestamp: Datetime!
+\tprogramId: String!
+\taccount: String!
+}
+
+enum InstructionType {
+`
+      for (const [name] of Object.entries(instructions)) {
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+        stats += '\t'+ name + ': Int!,\n'
+      }
+      schema += `}
+
+      
+` + stats + '}\n'
       code += this.writeInstructions(instructions)
     }
     if (Object.keys(accounts).length !== 0) {
+      schema += `\ninterface Account {
+\tstats: AccessStats!
+}
+
+enum AccountType {
+`
+      for (const [name] of Object.entries(accounts)) {
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+      }
+      schema += `}
+`
+
       code += '\n\n\n#*--------ACCOUNTS--------*#\n\n'
-      let [_accounts, query] = this.writeAccounts(accounts)
-      schema += query + "}\n\n"
-      code += _accounts
+      code += this.writeAccounts(accounts)
     }
+
 
     schema += code
 
@@ -308,10 +346,6 @@ type Query {
     if(schemaCheck.length == 0) {
       console.log("Schema correct!")
     }
-  }
-  private lowerCase(word: string) {
-    const capizalized = word.charAt(0).toLowerCase() + word.slice(1);
-    return capizalized
   }
 }
 

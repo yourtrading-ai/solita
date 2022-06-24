@@ -120,10 +120,7 @@ type ${this.accountsTypename} {
     const accountsArg = this.renderAccountsArg(processedKeys)
     const createInstructionArgs = `args: ${this.argsTypename}`
 
-return`
-
-#*-------------------------------------------------------------------*#
-${accountsType}
+return`${accountsType}
 ${ixArgType}
 
 type ${this.upperCamelIxName}Instruction implements Instruction {
@@ -131,7 +128,10 @@ type ${this.upperCamelIxName}Instruction implements Instruction {
 \ttimestamp: Datetime 
 \t${accountsArg}
 \t${createInstructionArgs}
-}`
+}
+
+#*-------------------------------------------------------------------*#
+`
   }
 }
 

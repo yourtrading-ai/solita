@@ -6,7 +6,6 @@ import {
   SOLANA_SPL_TOKEN_PACKAGE,
   SOLANA_SPL_TOKEN_EXPORT_NAME,
   TypeMappedSerdeField,
-  SOLANA_WEB3_PACKAGE,
   isIdlInstructionAccountWithDesc,
   PrimitiveTypeKey,
 } from './types'
@@ -19,7 +18,6 @@ import {
   ResolvedKnownPubkey,
   resolveKnownPubkey,
 } from './known-pubkeys'
-import { BEET_PACKAGE } from '@metaplex-foundation/beet'
 import { renderScalarEnums } from './render-enums'
 import { InstructionDiscriminator } from './instruction-discriminator'
 import { PathLike } from 'fs'
@@ -112,8 +110,7 @@ export const ${this.accounts} = [
   // -----------------
   private renderImports(processedKeys: ProcessedAccountKey[]) {
     const typeMapperImports = this.typeMapper.importsUsed(
-      this.fullFileDir.toString(),
-      new Set([SOLANA_WEB3_PACKAGE, BEET_PACKAGE])
+      this.fullFileDir.toString()
     )
     const needsSplToken = processedKeys.some(
       (x) => x.knownPubkey?.pack === SOLANA_SPL_TOKEN_PACKAGE
@@ -122,7 +119,8 @@ export const ${this.accounts} = [
       ? `\nimport * as ${SOLANA_SPL_TOKEN_EXPORT_NAME} from '${SOLANA_SPL_TOKEN_PACKAGE}';`
       : ''
 
-    return `
+    return `import * as beet from '@aleph-indexer/beet'
+import * as web3 from '@solana/web3.js'
 ${splToken}
 ${typeMapperImports.join('\n')}`.trim()
   }
