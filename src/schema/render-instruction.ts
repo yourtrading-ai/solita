@@ -123,12 +123,13 @@ type ${this.accountsTypename} {
 return`${accountsType}
 ${ixArgType}
 
-type ${this.upperCamelIxName}Instruction implements Instruction {
-\tsignature: String
-\ttimestamp: Datetime 
+type ${this.upperCamelIxName}Instruction {
 \t${accountsArg}
 \t${createInstructionArgs}
 }
+
+union ${this.upperCamelIxName}Data = ${this.upperCamelIxName}Instruction | Instruction
+
 
 #*-------------------------------------------------------------------*#
 `

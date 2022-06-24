@@ -298,7 +298,8 @@ type AccessStats {
       code += '\n\n#*--------INSTRUCTIONS--------*#\n\n\n'
       let stats =`type InstructionStats {
 `
-      schema += `interface Instruction {
+      schema += `
+type Instruction {
 \tid: String!
 \ttype: InstructionType!
 \ttimestamp: Datetime!
@@ -309,7 +310,7 @@ type AccessStats {
 enum InstructionType {
 `
       for (const [name] of Object.entries(instructions)) {
-        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
         stats += '\t'+ name + ': Int!,\n'
       }
       schema += `}
@@ -319,14 +320,15 @@ enum InstructionType {
       code += this.writeInstructions(instructions)
     }
     if (Object.keys(accounts).length !== 0) {
-      schema += `\ninterface Account {
+      schema += `
+type Account {
 \tstats: AccessStats!
 }
 
 enum AccountType {
 `
       for (const [name] of Object.entries(accounts)) {
-        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
       }
       schema += `}
 `
