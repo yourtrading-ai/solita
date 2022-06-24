@@ -120,9 +120,7 @@ export const ${this.accounts} = [
       ? `\nimport * as ${SOLANA_SPL_TOKEN_EXPORT_NAME} from '${SOLANA_SPL_TOKEN_PACKAGE}';`
       : ''
 
-    return `import * as beet from '@aleph-indexer/beet'
-import * as web3 from '@solana/web3.js'
-${splToken}
+    return `${splToken}
 ${typeMapperImports.join('\n')}`.trim()
   }
 

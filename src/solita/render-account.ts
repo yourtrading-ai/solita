@@ -112,9 +112,7 @@ class AccountRenderer {
     const imports = this.typeMapper.importsUsed(
       this.fullFileDir.toString(),
     )
-    return `import * as beet from '@aleph-indexer/beet'
-    import * as web3 from '@solana/web3.js'
-    ${imports.join('\n')}`.trim()
+    return `${imports.join('\n')}`.trim()
   }
 
   // -----------------
