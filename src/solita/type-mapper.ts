@@ -16,12 +16,12 @@ import {
   PrimaryTypeMap,
   PrimitiveTypeKey,
   TypeMappedSerdeField,
+  BEET_PACKAGE,
 } from './types'
 import { getOrCreate, logDebug, withoutTsExtension } from './utils'
 import { strict as assert } from 'assert'
 import {
   BeetTypeMapKey,
-  BEET_PACKAGE,
   SupportedTypeDefinition,
   supportedTypeMap as beetSupportedTypeMap,
 } from '@metaplex-foundation/beet'

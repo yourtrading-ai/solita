@@ -3,12 +3,10 @@ import { renderScalarEnums } from './render-enums'
 import { renderDataStruct } from './serdes'
 import { ForceFixable, TypeMapper } from './type-mapper'
 import {
-  BEET_PACKAGE,
   IdlAccount,
   isIdlTypeDefined,
   PrimitiveTypeKey,
   ResolveFieldType,
-  SOLANA_WEB3_PACKAGE,
   TypeMappedSerdeField,
 } from './types'
 import {
@@ -113,9 +111,10 @@ class AccountRenderer {
   private renderImports() {
     const imports = this.typeMapper.importsUsed(
       this.fullFileDir.toString(),
-      new Set([SOLANA_WEB3_PACKAGE, BEET_PACKAGE])
     )
-    return imports.join('\n')
+    return `import * as beet from '@aleph-indexer/beet'
+    import * as web3 from '@solana/web3.js'
+    ${imports.join('\n')}`.trim()
   }
 
   // -----------------

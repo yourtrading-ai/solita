@@ -33,11 +33,10 @@ const packsByLengthDesc = Array.from(serdePackages.keys()).sort((a, b) =>
 
 export function serdePackageExportName(
   pack: SerdePackage | undefined
-): SerdePackageExportName | null {
+) {
   if (pack == null) return null
 
   const exportName = serdePackages.get(pack)
-  assert(exportName != null, `Unknown serde package ${pack}`)
   return exportName
 }
 

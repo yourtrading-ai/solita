@@ -1,4 +1,3 @@
-import { BEET_PACKAGE } from '@metaplex-foundation/beet'
 import test, { Test } from 'tape'
 import { renderAccount } from '../src/solita/render-account'
 import { SerdePackage } from '../src/solita/serdes'
@@ -7,6 +6,7 @@ import {
   BEET_SOLANA_PACKAGE,
   IdlAccount,
   SOLANA_WEB3_PACKAGE,
+  BEET_PACKAGE,
 } from '../src/solita/types'
 import {
   analyzeCode,
