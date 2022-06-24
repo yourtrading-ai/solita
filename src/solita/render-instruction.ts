@@ -7,7 +7,7 @@ import {
   SOLANA_SPL_TOKEN_EXPORT_NAME,
   TypeMappedSerdeField,
   isIdlInstructionAccountWithDesc,
-  PrimitiveTypeKey,
+  PrimitiveTypeKey, SOLANA_WEB3_PACKAGE, BEET_ALEPH_PACKAGE,
 } from './types'
 import { strict as assert } from 'assert'
 import { ForceFixable, TypeMapper } from './type-mapper'
@@ -110,7 +110,8 @@ export const ${this.accounts} = [
   // -----------------
   private renderImports(processedKeys: ProcessedAccountKey[]) {
     const typeMapperImports = this.typeMapper.importsUsed(
-      this.fullFileDir.toString()
+      this.fullFileDir.toString(),
+      new Set([SOLANA_WEB3_PACKAGE, BEET_ALEPH_PACKAGE])
     )
     const needsSplToken = processedKeys.some(
       (x) => x.knownPubkey?.pack === SOLANA_SPL_TOKEN_PACKAGE

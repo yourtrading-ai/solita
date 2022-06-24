@@ -16,7 +16,7 @@ import {
   PrimaryTypeMap,
   PrimitiveTypeKey,
   TypeMappedSerdeField,
-  BEET_PACKAGE,
+  BEET_ALEPH_PACKAGE, BEET_SOLANA_ALEPH_PACKAGE,
 } from './types'
 import { getOrCreate, logDebug, withoutTsExtension } from './utils'
 import { strict as assert } from 'assert'
@@ -105,6 +105,10 @@ export class TypeMapper {
       typescriptType = 'any'
     }
     if (mapped.pack != null) {
+      if(mapped.pack === "@metaplex-foundation/beet")
+        mapped.pack = BEET_ALEPH_PACKAGE
+      else if(mapped.pack === "@metaplex-foundation/beet-solana")
+        mapped.pack = BEET_SOLANA_ALEPH_PACKAGE
       assertKnownSerdePackage(mapped.pack)
       const exp = serdePackageExportName(mapped.pack)
       typescriptType = `${exp}.${typescriptType}`
@@ -115,7 +119,7 @@ export class TypeMapper {
 
   private mapOptionType(ty: IdlTypeOption, name: string) {
     const inner = this.map(ty.option, name)
-    const optionPackage = BEET_PACKAGE
+    const optionPackage = BEET_ALEPH_PACKAGE
     this.serdePackagesUsed.add(optionPackage)
     const exp = serdePackageExportName(optionPackage)
     return `${exp}.COption<${inner}>`
@@ -184,6 +188,10 @@ export class TypeMapper {
     if (ty === 'string') return this.mapStringSerde(ty)
 
     const mapped = this.primaryTypeMap[ty]
+    if(mapped.sourcePack === "@metaplex-foundation/beet")
+      mapped.sourcePack = BEET_ALEPH_PACKAGE
+    else if(mapped.sourcePack === "@metaplex-foundation/beet-solana")
+      mapped.sourcePack = BEET_SOLANA_ALEPH_PACKAGE
 
     assertKnownSerdePackage(mapped.sourcePack)
     const packExportName = serdePackageExportName(mapped.sourcePack)
@@ -196,7 +204,10 @@ export class TypeMapper {
 
   private mapStringSerde(ty: 'string') {
     const mapped = this.primaryTypeMap[ty]
-
+    if(mapped.sourcePack === "@metaplex-foundation/beet")
+      mapped.sourcePack = BEET_ALEPH_PACKAGE
+    else if(mapped.sourcePack === "@metaplex-foundation/beet-solana")
+      mapped.sourcePack = BEET_SOLANA_ALEPH_PACKAGE
     assertKnownSerdePackage(mapped.sourcePack)
     const packExportName = serdePackageExportName(mapped.sourcePack)
 
@@ -208,7 +219,7 @@ export class TypeMapper {
 
   private mapOptionSerde(ty: IdlTypeOption, name: string) {
     const inner = this.mapSerde(ty.option, name)
-    const optionPackage = BEET_PACKAGE
+    const optionPackage = BEET_ALEPH_PACKAGE
 
     this.serdePackagesUsed.add(optionPackage)
     this.usedFixableSerde = true
@@ -219,7 +230,7 @@ export class TypeMapper {
 
   private mapVecSerde(ty: IdlTypeVec, name: string) {
     const inner = this.mapSerde(ty.vec, name)
-    const arrayPackage = BEET_PACKAGE
+    const arrayPackage = BEET_ALEPH_PACKAGE
 
     this.serdePackagesUsed.add(arrayPackage)
     this.usedFixableSerde = true
@@ -232,6 +243,10 @@ export class TypeMapper {
     const inner = this.mapSerde(ty.array[0], name)
     const size = ty.array[1]
     const mapped = this.primaryTypeMap['UniformFixedSizeArray']
+    if(mapped.sourcePack === "@metaplex-foundation/beet")
+      mapped.sourcePack = BEET_ALEPH_PACKAGE
+    else if(mapped.sourcePack === "@metaplex-foundation/beet-solana")
+      mapped.sourcePack = BEET_SOLANA_ALEPH_PACKAGE
     const arrayPackage = mapped.sourcePack
     assertKnownSerdePackage(arrayPackage)
 
@@ -256,8 +271,8 @@ export class TypeMapper {
       NO_NAME_PROVIDED,
       'Need to provide name for enum types'
     )
-    const scalarEnumPackage = BEET_PACKAGE
-    const exp = serdePackageExportName(BEET_PACKAGE)
+    const scalarEnumPackage = BEET_ALEPH_PACKAGE
+    const exp = serdePackageExportName(BEET_ALEPH_PACKAGE)
     this.serdePackagesUsed.add(scalarEnumPackage)
 
     this.updateScalarEnumsUsed(name, ty)
