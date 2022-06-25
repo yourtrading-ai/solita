@@ -264,8 +264,7 @@ export class Schema {
 
   async writeSchema(instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string>) {
     assert(this.paths != null, 'should have set paths')
-    let schema = `
-scalar Datetime
+    let schema = `scalar Datetime
 scalar PublicKey
 scalar GraphQLLong
 scalar Null
@@ -275,8 +274,8 @@ schema {
 }
 
 type Query {
-\tintructionHistory: [Instruction!]!
-\taccounts(type: AccountType, address: String): [Account!]!
+\tintructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction!]!
+\taccounts(type: AccountType, accounts: String): [Account!]!
 }
 
 type AccessStats {
