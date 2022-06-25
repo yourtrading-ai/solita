@@ -274,16 +274,16 @@ schema {
 }
 
 type Query {
-\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction!]!
-\taccounts(type: AccountType, accounts: String): [Account!]!
+\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
+\taccounts(type: AccountType, accounts: String): [Account]
 }
 
 type AccessStats {
-\trequests1h: Int!
-\trequests24h: Int!
-\trequests7d: Int!
-\trequestsTotal: Int!
-\taccessingPrograms: [String!]!
+\trequests1h: Int
+\trequests24h: Int
+\trequests7d: Int
+\trequestsTotal: Int
+\taccessingPrograms: [String]
 }
 `
     let code = ''
@@ -300,18 +300,18 @@ type AccessStats {
 `
       schema += `
 interface Instruction {
-\tid: String!
-\ttype: InstructionType!
-\ttimestamp: Datetime!
-\tprogramId: String!
-\taccount: String!
+\tid: String
+\ttype: InstructionType
+\ttimestamp: Datetime
+\tprogramId: String
+\taccount: String
 }
 
 enum InstructionType {
 `
       for (const [name] of Object.entries(instructions)) {
         schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
-        stats += '\t'+ name + ': Int!,\n'
+        stats += '\t'+ name + ': Int,\n'
       }
       schema += `}
 
@@ -322,14 +322,23 @@ enum InstructionType {
     if (Object.keys(accounts).length !== 0) {
       schema += `
 interface Account {
-\ttype: AccountType!
-\taddress: String!
-\tstats: AccessStats!
+\tname: String
+\ttype: AccountType
+\taddress: String
+\tstats: AccessStats
+\tdata: AccountsData
 }
 
 union Accounts = `
 for (const [name] of Object.entries(accounts)) {
   schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + ' | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union AccountsData = `
+for (const [name] of Object.entries(accounts)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data | '
 }
 schema = schema.slice(0, schema.length-2)
 

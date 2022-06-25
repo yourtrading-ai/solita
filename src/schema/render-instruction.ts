@@ -64,7 +64,7 @@ class InstructionRenderer {
     if (this.ix.args.length === 0) return ''
     const fields = this.ix.args
       .map((field) => 
-        this.renderIxArgField(field, listVoid)
+        this.renderIxArgField(field, listVoid).replace("!", "")
       ).join(',\n  ')
     const code = `type ${this.argsTypename} {
 \t${fields}
@@ -103,7 +103,7 @@ type ${this.accountsTypename} {
   }
   private renderAccountsArg(processedKeys: ProcessedAccountKey[]) {
     if (processedKeys.length === 0) return ''
-    return `accounts: ${this.accountsTypename},`
+    return `accounts: ${this.accountsTypename},`.replace("!", "")
   }
 
   // -----------------
@@ -124,11 +124,11 @@ return`${accountsType}
 ${ixArgType}
 
 type ${this.upperCamelIxName}Instruction implements Instruction {
-\tid: String!
-\ttype: InstructionType!
-\ttimestamp: Datetime!
-\tprogramId: String!
-\taccount: String!
+\tid: String
+\ttype: InstructionType
+\ttimestamp: Datetime
+\tprogramId: String
+\taccount: String
 \t${accountsArg}
 \t${createInstructionArgs}
 }

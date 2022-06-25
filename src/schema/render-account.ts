@@ -8,7 +8,7 @@ function colonSeparatedTypedField(
   field: { name: string; tsType: string },
   prefix = ''
 ) {
-  return `${prefix}${field.name}: ${field.tsType}`
+  return `${prefix}${field.name}: ${field.tsType.replace("!", "")}`
 }
 
 class AccountRenderer {
@@ -57,11 +57,17 @@ class AccountRenderer {
 
     return `
 type ${this.accountDataArgsTypeName} implements Account {
-\ttype: AccountType!
-\taddress: String!
-\tstats: AccessStats!
+\tname: String
+\ttype: AccountType
+\taddress: String
+\tstats: AccessStats
+\tdata: ${this.accountDataArgsTypeName}Data
+}
+
+type ${this.accountDataArgsTypeName}Data {
 \t${renderedFields}
-}`
+}
+`
   }
 
 

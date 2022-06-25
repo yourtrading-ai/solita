@@ -174,7 +174,7 @@ export type AliasesTypeMap = Record<
 export const aliasesTypeMap: AliasesTypeMap = {
   bytes: {
     idl: 'bytes',
-    schema: '[Int!]',
+    schema: '[Int]',
   },
 }
 //--------------------------
