@@ -57,6 +57,8 @@ class AccountRenderer {
 
     return `
 type ${this.accountDataArgsTypeName} implements Account {
+\ttype: AccountType!
+\taddress: String!
 \tstats: AccessStats!
 \t${renderedFields}
 }`

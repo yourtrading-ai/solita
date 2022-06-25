@@ -279,10 +279,11 @@ type Query {
 }
 
 type AccessStats {
-\taccesses1h: InstructionStats!
-\taccesses24h: InstructionStats!
-\taccesses7d: InstructionStats!
-\taccessesTotal: InstructionStats!
+\trequests1h: Int!
+\trequests24h: Int!
+\trequests7d: Int!
+\trequestsTotal: Int!
+\taccessingPrograms: [String!]!
 }
 `
     let code = ''
@@ -321,6 +322,8 @@ enum InstructionType {
     if (Object.keys(accounts).length !== 0) {
       schema += `
 interface Account {
+\ttype: AccountType!
+\taddress: String!
 \tstats: AccessStats!
 }
 
@@ -356,7 +359,7 @@ schema += `
 enum AccountType {
 `
       for (const [name] of Object.entries(accounts)) {
-        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
       }
       schema += `}
 `
