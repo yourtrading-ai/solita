@@ -56,12 +56,10 @@ class AccountRenderer {
       .join('\n\t')
 
     return `
-type ${this.accountDataArgsTypeName} {
+type ${this.accountDataArgsTypeName} implements Account {
+\tstats: AccessStats!
 \t${renderedFields}
-}
-
-union ${this.accountDataArgsTypeName}Data = ${this.accountDataArgsTypeName} | Account
-`
+}`
   }
 
 

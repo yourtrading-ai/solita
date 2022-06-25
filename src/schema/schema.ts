@@ -299,7 +299,7 @@ type AccessStats {
       let stats =`type InstructionStats {
 `
       schema += `
-type Instruction {
+interface Instruction {
 \tid: String!
 \ttype: InstructionType!
 \ttimestamp: Datetime!
@@ -321,9 +321,38 @@ enum InstructionType {
     }
     if (Object.keys(accounts).length !== 0) {
       schema += `
-type Account {
+interface Account {
 \tstats: AccessStats!
 }
+
+union Accounts = `
+for (const [name] of Object.entries(accounts)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + ' | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union Instructions = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Instruction | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union InstructionAccounts = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionAccounts | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union InstructionArgs = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
 
 enum AccountType {
 `
