@@ -274,7 +274,7 @@ schema {
 }
 
 type Query {
-\tintructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction!]!
+\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction!]!
 \taccounts(type: AccountType, accounts: String): [Account!]!
 }
 
