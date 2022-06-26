@@ -5,8 +5,7 @@ import {
   IdlField,
   isIdlTypeEnum,
   PrimitiveTypeKey,
-  isIdlTypeArray,
-  IdlTypeArray
+  isIdlTypeArray
 } from './types'
 import { strict as assert } from 'assert'
 import { renderTypeDataStruct, serdePackageExportName } from './serdes'
@@ -41,9 +40,7 @@ class TypeRenderer {
   // -----------------
   private renderTypeField = (field: IdlField) => {
     const typescriptType = this.typeMapper.map(field.type, field.name)
-    const arrayError: IdlTypeArray = { array: [ 'u64', 5 ] }
     if(isIdlTypeArray(field.type)){
-      console.log(field, arrayError)
       if(field.type.array[0] == 'u64' && field.type.array[1] == 5){
         return `${field.name}: number[]`
       }
