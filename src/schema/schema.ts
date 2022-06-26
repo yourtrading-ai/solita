@@ -276,6 +276,7 @@ schema {
 type Query {
 \tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
 \taccounts(type: AccountType, accounts: String): [Account]
+\tglobalStats(type: AccountType, accounts: String): GlobalStats
 }
 
 type AccessStats {
@@ -284,6 +285,12 @@ type AccessStats {
 \trequests7d: Int
 \trequestsTotal: Int
 \taccessingPrograms: [String]
+}
+
+type GlobalStats {
+\ttotalAccounts: TotalAccounts
+\ttotalRequests: GraphQLLong
+\ttotalUniqueAccessingPrograms: Int
 }
 `
     let code = ''
@@ -328,6 +335,15 @@ interface Account {
 \tstats: AccessStats
 \tdata: AccountsData
 }
+
+type TotalAccounts {
+`
+for (const [name] of Object.entries(accounts)) {
+  schema += '\t' + name.charAt(0).toUpperCase().concat(name.slice(1)) + ': Int\n'
+}
+schema = schema.slice(0, schema.length-1)
+
+schema += `}
 
 union Accounts = `
 for (const [name] of Object.entries(accounts)) {
