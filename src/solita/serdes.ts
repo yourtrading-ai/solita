@@ -181,7 +181,12 @@ export function renderTypeDataStruct({
 
   const fieldDecls = fields
     .map((f) => {
-      return `['${f.name}', ${f.type}]`
+      if(f.type == 'beet.uniformFixedSizeArray(beet.u64, 5)'){
+        return `['${f.name}', beet.uniformFixedSizeArray(beet.u8, 40)]`
+      }
+      else{
+        return `['${f.name}', ${f.type}]`
+      }
     })
     .join(',\n    ')
 
