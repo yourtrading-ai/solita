@@ -353,8 +353,13 @@ schema = schema.slice(0, schema.length-2)
 
 schema += `
 union AccountsData = `
-for (const [name] of Object.entries(accounts)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data | '
+for (const [name,code] of Object.entries(accounts)) {
+
+  //Makes sure to only make the _Data AccountsData, if there the type exists (the type doesnt exist, if the content was null)
+  if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + "_Data")){
+    schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_Data | '
+  }
+
 }
 schema = schema.slice(0, schema.length-2)
 
