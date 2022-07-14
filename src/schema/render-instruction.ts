@@ -3,12 +3,12 @@ import {
   IdlInstructionAccount,
   IdlInstructionArg,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
 import { TypeMapper } from './type-mapper'
 import {
   ResolvedKnownPubkey,
   resolveKnownPubkey,
-} from './known-pubkeys'
+} from '../solita/known-pubkeys'
 
 type ProcessedAccountKey = IdlInstructionAccount & {
   knownPubkey?: ResolvedKnownPubkey
@@ -26,7 +26,6 @@ class InstructionRenderer {
 
   constructor(
     readonly ix: IdlInstruction,
-    readonly programId: string,
     private readonly typeMapper: TypeMapper
   ) {
     this.upperCamelIxName = ix.name
@@ -65,7 +64,7 @@ class InstructionRenderer {
     if (this.ix.args.length === 0) return ''
     const fields = this.ix.args
       .map((field) => 
-        this.renderIxArgField(field, listVoid)
+        this.renderIxArgField(field, listVoid).replace("!", "")
       ).join(',\n  ')
     const code = `type ${this.argsTypename} {
 \t${fields}
@@ -104,7 +103,7 @@ type ${this.accountsTypename} {
   }
   private renderAccountsArg(processedKeys: ProcessedAccountKey[]) {
     if (processedKeys.length === 0) return ''
-    return `accounts: ${this.accountsTypename},`
+    return `accounts: ${this.accountsTypename},`.replace("!", "")
   }
 
   // -----------------
@@ -121,24 +120,27 @@ type ${this.accountsTypename} {
     const accountsArg = this.renderAccountsArg(processedKeys)
     const createInstructionArgs = `args: ${this.argsTypename}`
 
-return`
-
-#*-------------------------------------------------------------------*#
-${accountsType}
+return`${accountsType}
 ${ixArgType}
 
 type ${this.upperCamelIxName}Instruction implements Instruction {
-\tsignature: String
-\ttimestamp: Datetime 
+\tid: String
+\ttype: InstructionType
+\ttimestamp: Datetime
+\tprogramId: String
+\taccount: String
 \t${accountsArg}
 \t${createInstructionArgs}
-}`
+}
+
+
+#*-------------------------------------------------------------------*#
+`
   }
 }
 
 export function renderInstruction(
   ix: IdlInstruction,
-  programId: string,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
@@ -151,7 +153,6 @@ export function renderInstruction(
   )
   const renderer = new InstructionRenderer(
     ix,
-    programId,
     typeMapper
   )
   return renderer.render(listVoid)

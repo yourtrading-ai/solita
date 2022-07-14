@@ -1,15 +1,14 @@
 import { TypeMapper } from './type-mapper'
+import { IdlAccount } from "../"
 import {
-  IdlAccount,
   PrimitiveTypeKey,
-  ResolveFieldType,
 } from './types'
 
 function colonSeparatedTypedField(
   field: { name: string; tsType: string },
   prefix = ''
 ) {
-  return `${prefix}${field.name}: ${field.tsType}`
+  return `${prefix}${field.name}: ${field.tsType.replace("!", "")}`
 }
 
 class AccountRenderer {
@@ -57,9 +56,18 @@ class AccountRenderer {
       .join('\n\t')
 
     return `
-type ${this.accountDataArgsTypeName} {
+type ${this.accountDataArgsTypeName} implements Account {
+\tname: String
+\ttype: AccountType
+\taddress: String
+\tstats: AccessStats
+\tdata: ${this.accountDataArgsTypeName}Data
+}
+
+type ${this.accountDataArgsTypeName}Data {
 \t${renderedFields}
-}\n`
+}
+`
   }
 
 
@@ -81,8 +89,6 @@ export function renderAccount(
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
-  resolveFieldType: ResolveFieldType,
-  hasImplicitDiscriminator: boolean
 ) {
   const typeMapper = new TypeMapper(
     accountFilesByType,

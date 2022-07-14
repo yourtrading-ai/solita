@@ -4,7 +4,7 @@ import {
   IdlField,
   isIdlTypeEnum,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
 import { strict as assert } from 'assert'
 import { renderScalarEnum } from './render-enums'
 import { PathLike } from 'fs'
@@ -36,7 +36,7 @@ class TypeRenderer {
   // -----------------
   private renderTypeField = (field: IdlField) => {
     const typescriptType = this.typeMapper.map(field.type, field.name)
-    return `\t${field.name}: ${typescriptType}`
+    return `\t${field.name}: ${typescriptType.replace("!", "")}`
   }
   
   private renderTypes() {

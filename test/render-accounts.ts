@@ -1,12 +1,12 @@
-import { BEET_PACKAGE } from '@metaplex-foundation/beet'
 import test, { Test } from 'tape'
 import { renderAccount } from '../src/solita/render-account'
 import { SerdePackage } from '../src/solita/serdes'
 import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
 import {
-  BEET_SOLANA_PACKAGE,
+  BEET_SOLANA_ALEPH_PACKAGE,
   IdlAccount,
   SOLANA_WEB3_PACKAGE,
+  BEET_ALEPH_PACKAGE,
 } from '../src/solita/types'
 import {
   analyzeCode,
@@ -68,7 +68,7 @@ test.skip('accounts: no field', async (t) => {
     },
   }
 
-  await checkRenderedAccount(t, account, [BEET_PACKAGE, SOLANA_WEB3_PACKAGE])
+  await checkRenderedAccount(t, account, [BEET_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE])
   t.end()
 })
 
@@ -87,8 +87,8 @@ test('accounts: one field', async (t) => {
   }
 
   await checkRenderedAccount(t, account, [
-    BEET_PACKAGE,
-    BEET_SOLANA_PACKAGE,
+    BEET_ALEPH_PACKAGE,
+    BEET_SOLANA_ALEPH_PACKAGE,
     SOLANA_WEB3_PACKAGE,
   ])
   t.end()
@@ -121,8 +121,8 @@ test('accounts: four fields', async (t) => {
   }
 
   await checkRenderedAccount(t, account, [
-    BEET_PACKAGE,
-    BEET_SOLANA_PACKAGE,
+    BEET_ALEPH_PACKAGE,
+    BEET_SOLANA_ALEPH_PACKAGE,
     SOLANA_WEB3_PACKAGE,
   ])
   t.end()
@@ -153,7 +153,7 @@ test('accounts: pretty function for different types', async (t) => {
   await checkRenderedAccount(
     t,
     account,
-    [BEET_PACKAGE, BEET_SOLANA_PACKAGE, SOLANA_WEB3_PACKAGE],
+    [BEET_ALEPH_PACKAGE, BEET_SOLANA_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE],
     {
       rxs: [
         /auctionHouseFeeAccount: this.auctionHouseFeeAccount.toBase58\(\)/,

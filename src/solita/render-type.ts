@@ -1,10 +1,11 @@
 import { ForceFixable, TypeMapper } from './type-mapper'
 import {
-  BEET_PACKAGE,
+  BEET_ALEPH_PACKAGE,
   IdlDefinedTypeDefinition,
   IdlField,
   isIdlTypeEnum,
   PrimitiveTypeKey,
+  isIdlTypeArray
 } from './types'
 import { strict as assert } from 'assert'
 import { renderTypeDataStruct, serdePackageExportName } from './serdes'
@@ -39,6 +40,14 @@ class TypeRenderer {
   // -----------------
   private renderTypeField = (field: IdlField) => {
     const typescriptType = this.typeMapper.map(field.type, field.name)
+    if(isIdlTypeArray(field.type)){
+      if(field.type.array[0] == 'u64' && field.type.array[1] == 5){
+        return `${field.name}: number[]`
+      }
+      else{
+        return `${field.name}: ${typescriptType}`
+      }
+    }
     return `${field.name}: ${typescriptType}`
   }
 
@@ -71,7 +80,7 @@ class TypeRenderer {
   private renderImports() {
     const imports = this.typeMapper.importsUsed(
       this.fullFileDir,
-      new Set([BEET_PACKAGE])
+      new Set([BEET_ALEPH_PACKAGE])
     )
     return imports.join('\n')
   }
@@ -83,8 +92,8 @@ class TypeRenderer {
     if (isIdlTypeEnum(this.ty.type)) {
       const serde = this.typeMapper.mapSerde(this.ty.type, this.ty.name)
       const enumTy = this.typeMapper.map(this.ty.type, this.ty.name)
-      this.typeMapper.serdePackagesUsed.add(BEET_PACKAGE)
-      const exp = serdePackageExportName(BEET_PACKAGE)
+      this.typeMapper.serdePackagesUsed.add(BEET_ALEPH_PACKAGE)
+      const exp = serdePackageExportName(BEET_ALEPH_PACKAGE)
       // Need the cast here since otherwise type is assumed to be
       // FixedSizeBeet<typeof ${enumTy}, typeof ${enumTy}> which is incorrect
       return `const ${this.beetArgName} = ${serde} as ${exp}.FixedSizeBeet<${enumTy}, ${enumTy}>`

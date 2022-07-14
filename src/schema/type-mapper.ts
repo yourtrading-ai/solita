@@ -1,21 +1,10 @@
 import {
-  IdlEnumVariant,
-  IdlType,
-  IdlTypeArray,
-  IdlTypeDefined,
-  IdlTypeEnum,
-  IdlTypeOption,
-  IdlTypeVec,
-  isIdlTypeArray,
-  isIdlTypeDefined,
-  isIdlTypeEnum,
-  isIdlTypeOption,
-  isIdlTypeVec,
   PrimitiveTypeKey,
   supportedTypeMap,
   PrimaryTypeMap
 } from './types'
-import { getOrCreate, logDebug } from './utils'
+import { isIdlTypeOption, isIdlTypeVec, isIdlTypeArray, isIdlTypeDefined, isIdlTypeEnum, IdlType, IdlTypeEnum, IdlEnumVariant, IdlTypeOption, IdlTypeVec, IdlTypeArray, IdlTypeDefined } from "../"
+import { getOrCreate, logDebug } from '../solita/utils'
 import { strict as assert } from 'assert'
 
 
@@ -68,7 +57,7 @@ export class TypeMapper {
       logDebug(`No mapped type found for ${name}: ${ty}, using any`)
       typescriptType = 'any'
     }
-    typescriptType = `${typescriptType}!`
+    typescriptType = `${typescriptType}`
     return typescriptType
   }
 
@@ -79,12 +68,12 @@ export class TypeMapper {
 
   private mapVecType(ty: IdlTypeVec, name: string) {
     const inner = this.map(ty.vec, name)
-    return `[${inner}]!`
+    return `[${inner}]`
   }
 
   private mapArrayType(ty: IdlTypeArray, name: string) {
     const inner = this.map(ty.array[0], name)
-    return `[${inner}]!`
+    return `[${inner}]`
   }
 
   private mapDefinedType(ty: IdlTypeDefined) {
@@ -101,7 +90,7 @@ export class TypeMapper {
       'Need to provide name for enum types'
     )
     this.updateScalarEnumsUsed(name, ty)
-    return name + '!'
+    return name
   }
 
   map(ty: IdlType, name: string = NO_NAME_PROVIDED): string {
@@ -109,7 +98,7 @@ export class TypeMapper {
       return this.mapPrimitiveType(ty, name)
     }
     if (isIdlTypeOption(ty)) {
-      return this.mapOptionType(ty, name).replace("!", ""); 
+      return this.mapOptionType(ty, name)
     }
     if (isIdlTypeVec(ty)) {
       return this.mapVecType(ty, name)
@@ -141,5 +130,4 @@ export class TypeMapper {
   static defaultPrimaryTypeMap: PrimaryTypeMap = {
     ...supportedTypeMap,
   }
-
 }

@@ -3,8 +3,8 @@ import { renderInstruction } from '../src/solita/render-instruction'
 import { SerdePackage } from '../src/solita/serdes'
 import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
 import {
-  BEET_PACKAGE,
-  BEET_SOLANA_PACKAGE,
+  BEET_ALEPH_PACKAGE,
+  BEET_SOLANA_ALEPH_PACKAGE,
   IdlInstruction,
   SOLANA_WEB3_PACKAGE,
 } from '../src/solita/types'
@@ -13,7 +13,6 @@ import {
   verifyImports,
   verifySyntacticCorrectness,
 } from './utils/verify-code'
-const PROGRAM_ID = 'testprogram'
 
 const DIAGNOSTIC_ON = false
 const INSTRUCTION_FILE_DIR = '/root/app/instructions/'
@@ -32,7 +31,6 @@ async function checkRenderedIx(
   const ts = renderInstruction(
     ix,
     INSTRUCTION_FILE_DIR,
-    PROGRAM_ID,
     new Map(),
     new Map(),
     new Map(),
@@ -66,7 +64,7 @@ test('ix: empty args', async (t) => {
     ],
     args: [],
   }
-  await checkRenderedIx(t, ix, [BEET_PACKAGE, SOLANA_WEB3_PACKAGE])
+  await checkRenderedIx(t, ix, [BEET_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE])
   t.end()
 })
 
@@ -99,7 +97,7 @@ test('ix: one arg', async (t) => {
       },
     ],
   }
-  await checkRenderedIx(t, ix, [BEET_PACKAGE, SOLANA_WEB3_PACKAGE])
+  await checkRenderedIx(t, ix, [BEET_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE])
   t.end()
 })
 
@@ -125,8 +123,8 @@ test('ix: two args', async (t) => {
     ],
   }
   await checkRenderedIx(t, ix, [
-    BEET_PACKAGE,
-    BEET_SOLANA_PACKAGE,
+    BEET_ALEPH_PACKAGE,
+    BEET_SOLANA_ALEPH_PACKAGE,
     SOLANA_WEB3_PACKAGE,
   ])
   t.end()
@@ -159,8 +157,8 @@ test('ix: two accounts and two args', async (t) => {
     ],
   }
   await checkRenderedIx(t, ix, [
-    BEET_PACKAGE,
-    BEET_SOLANA_PACKAGE,
+    BEET_ALEPH_PACKAGE,
+    BEET_SOLANA_ALEPH_PACKAGE,
     SOLANA_WEB3_PACKAGE,
   ])
   t.end()
@@ -192,7 +190,7 @@ test('ix: three accounts, two optional', async (t) => {
     ],
     args: [],
   }
-  await checkRenderedIx(t, ix, [BEET_PACKAGE, SOLANA_WEB3_PACKAGE], {
+  await checkRenderedIx(t, ix, [BEET_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE], {
     rxs: [
       // Ensuring that the pubkeys for optional accounts aren't required
       /authority\: web3\.PublicKey/,
@@ -228,7 +226,7 @@ test('ix: accounts render comments with and without desc', async (t) => {
     ],
     args: [],
   }
-  await checkRenderedIx(t, ix, [BEET_PACKAGE, SOLANA_WEB3_PACKAGE], {
+  await checkRenderedIx(t, ix, [BEET_ALEPH_PACKAGE, SOLANA_WEB3_PACKAGE], {
     rxs: [
       /@property .+signer.+ withoutDesc/,
       /@property .+writable.+ withDesc Use Authority Record PDA If present the program Assumes a delegated use authority/,

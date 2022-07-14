@@ -2,7 +2,7 @@ import test, { Test } from 'tape'
 import { renderType } from '../src/solita/render-type'
 import { SerdePackage } from '../src/solita/serdes'
 import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
-import { BEET_PACKAGE, IdlDefinedTypeDefinition } from '../src/solita/types'
+import { BEET_ALEPH_PACKAGE, IdlDefinedTypeDefinition } from '../src/solita/types'
 import {
   analyzeCode,
   verifyImports,
@@ -54,7 +54,7 @@ test('types: with one field not using lib types', async (t) => {
     },
   }
 
-  await checkRenderedType(t, ty, [BEET_PACKAGE])
+  await checkRenderedType(t, ty, [BEET_ALEPH_PACKAGE])
   t.end()
 })
 
@@ -82,7 +82,7 @@ test('types: with three, two lib types', async (t) => {
     },
   }
 
-  await checkRenderedType(t, ty, [BEET_PACKAGE])
+  await checkRenderedType(t, ty, [BEET_ALEPH_PACKAGE])
   t.end()
 })
 
@@ -116,6 +116,6 @@ test('types: with four fields, one referring to other defined type', async (t) =
     },
   }
 
-  await checkRenderedType(t, ty, [BEET_PACKAGE])
+  await checkRenderedType(t, ty, [BEET_ALEPH_PACKAGE])
   t.end()
 })

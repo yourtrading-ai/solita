@@ -1,17 +1,17 @@
 import { strict as assert } from 'assert'
 import {
   BEET_EXPORT_NAME,
-  BEET_PACKAGE,
+  BEET_ALEPH_PACKAGE,
   BEET_SOLANA_EXPORT_NAME,
-  BEET_SOLANA_PACKAGE,
+  BEET_SOLANA_ALEPH_PACKAGE,
   SOLANA_WEB3_EXPORT_NAME,
   SOLANA_WEB3_PACKAGE,
   TypeMappedSerdeField,
 } from './types'
 
 export type SerdePackage =
-  | typeof BEET_PACKAGE
-  | typeof BEET_SOLANA_PACKAGE
+  | typeof BEET_ALEPH_PACKAGE
+  | typeof BEET_SOLANA_ALEPH_PACKAGE
   | typeof SOLANA_WEB3_PACKAGE
 
 export type SerdePackageExportName =
@@ -21,8 +21,8 @@ export type SerdePackageExportName =
 
 export const serdePackages: Map<SerdePackage, SerdePackageExportName> = new Map(
   [
-    [BEET_PACKAGE, BEET_EXPORT_NAME],
-    [BEET_SOLANA_PACKAGE, BEET_SOLANA_EXPORT_NAME],
+    [BEET_ALEPH_PACKAGE, BEET_EXPORT_NAME],
+    [BEET_SOLANA_ALEPH_PACKAGE, BEET_SOLANA_EXPORT_NAME],
     [SOLANA_WEB3_PACKAGE, SOLANA_WEB3_EXPORT_NAME],
   ]
 )
@@ -33,11 +33,10 @@ const packsByLengthDesc = Array.from(serdePackages.keys()).sort((a, b) =>
 
 export function serdePackageExportName(
   pack: SerdePackage | undefined
-): SerdePackageExportName | null {
+) {
   if (pack == null) return null
 
   const exportName = serdePackages.get(pack)
-  assert(exportName != null, `Unknown serde package ${pack}`)
   return exportName
 }
 
@@ -64,8 +63,8 @@ export function serdePackageTypePrefix(pack: SerdePackage | undefined): string {
 
 export function isKnownSerdePackage(pack: string): pack is SerdePackage {
   return (
-    pack === BEET_PACKAGE ||
-    pack === BEET_SOLANA_PACKAGE ||
+    pack === BEET_ALEPH_PACKAGE ||
+    pack === BEET_SOLANA_ALEPH_PACKAGE ||
     pack === SOLANA_WEB3_PACKAGE
   )
 }
@@ -182,7 +181,12 @@ export function renderTypeDataStruct({
 
   const fieldDecls = fields
     .map((f) => {
-      return `['${f.name}', ${f.type}]`
+      if(f.type == 'beet.uniformFixedSizeArray(beet.u64, 5)'){
+        return `['${f.name}', beet.uniformFixedSizeArray(beet.u8, 40)]`
+      }
+      else{
+        return `['${f.name}', ${f.type}]`
+      }
     })
     .join(',\n    ')
 

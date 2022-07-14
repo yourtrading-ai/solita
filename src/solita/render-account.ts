@@ -3,12 +3,10 @@ import { renderScalarEnums } from './render-enums'
 import { renderDataStruct } from './serdes'
 import { ForceFixable, TypeMapper } from './type-mapper'
 import {
-  BEET_PACKAGE,
   IdlAccount,
   isIdlTypeDefined,
   PrimitiveTypeKey,
   ResolveFieldType,
-  SOLANA_WEB3_PACKAGE,
   TypeMappedSerdeField,
 } from './types'
 import {
@@ -113,9 +111,8 @@ class AccountRenderer {
   private renderImports() {
     const imports = this.typeMapper.importsUsed(
       this.fullFileDir.toString(),
-      new Set([SOLANA_WEB3_PACKAGE, BEET_PACKAGE])
     )
-    return imports.join('\n')
+    return `${imports.join('\n')}`.trim()
   }
 
   // -----------------
@@ -226,7 +223,7 @@ export type ${this.accountDataArgsTypeName} = {
       Array.from(accountDiscriminator(this.account.name))
     )
 
-    return `const ${this.accountDiscriminatorName} = ${accountDisc}`
+    return `export const ${this.accountDiscriminatorName} = ${accountDisc}`
   }
 
   private renderAccountDataClass(fields: { name: string; tsType: string }[]) {

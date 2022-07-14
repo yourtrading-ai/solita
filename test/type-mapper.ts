@@ -2,8 +2,8 @@ import test from 'tape'
 import spok from 'spok'
 import { TypeMapper } from '../src/solita/type-mapper'
 import {
-  BEET_PACKAGE,
-  BEET_SOLANA_PACKAGE,
+  BEET_ALEPH_PACKAGE,
+  BEET_SOLANA_ALEPH_PACKAGE,
   IdlField,
   IdlType,
   IdlTypeEnum,
@@ -34,7 +34,7 @@ test('type-mapper: primitive types - numbers', (t) => {
   }
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
   t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
@@ -51,7 +51,7 @@ test('type-mapper: primitive types - bignums', (t) => {
   }
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
   t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
@@ -63,7 +63,7 @@ test('type-mapper: primitive types - bignums', (t) => {
   }
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
   t.end()
@@ -82,7 +82,7 @@ test('type-mapper: primitive types - string', (t) => {
   t.equal(serde, 'beet.utf8String', 'string serde')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   t.ok(tm.usedFixableSerde, 'used fixable serde')
 
@@ -144,7 +144,7 @@ test('type-mapper: enums scalar', (t) => {
     t.equal(serde, 'beet.fixedScalarEnum(MembershipModel)', 'serde')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     spok(t, Array.from(tm.scalarEnumsUsed), {
       $topic: 'scalarEnumsUsed',
@@ -170,7 +170,7 @@ test('type-mapper: composite types - option<number | bignum>', (t) => {
     t.equal(ty, 'beet.COption<number>', 'option<u16>')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
 
     tm.clearUsages()
@@ -179,7 +179,7 @@ test('type-mapper: composite types - option<number | bignum>', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
     t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -195,7 +195,7 @@ test('type-mapper: composite types - option<number | bignum>', (t) => {
     t.equal(ty, 'beet.COption<beet.bignum>', 'option<u64>')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
 
     tm.clearUsages()
@@ -204,7 +204,7 @@ test('type-mapper: composite types - option<number | bignum>', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
     t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -232,7 +232,7 @@ test('type-mapper: composite types - vec<number | bignum>', (t) => {
     t.equal(serde, 'beet.array(beet.u16)', 'vec<u16> serde')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
     t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -248,7 +248,7 @@ test('type-mapper: composite types - vec<number | bignum>', (t) => {
     t.equal(ty, 'beet.bignum[]', 'vec<u64>')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
 
     tm.clearUsages()
@@ -256,7 +256,7 @@ test('type-mapper: composite types - vec<number | bignum>', (t) => {
     t.equal(serde, 'beet.array(beet.u64)', 'vec<u64> serde')
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
     t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -287,7 +287,7 @@ test('type-mapper: composite types - array<number>', (t) => {
     )
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
   }
@@ -345,7 +345,7 @@ test('type-mapper: type extensions - publicKey', (t) => {
   t.equal(serde, 'beetSolana.publicKey', 'publicKey serde')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_SOLANA_PACKAGE],
+    ...[BEET_SOLANA_ALEPH_PACKAGE],
   })
   t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
 
@@ -366,7 +366,7 @@ test('type-mapper: composite with type extensions - publicKey', (t) => {
   t.equal(ty, 'beet.COption<web3.PublicKey>', 'option<publicKey>')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[SOLANA_WEB3_PACKAGE, BEET_PACKAGE],
+    ...[SOLANA_WEB3_PACKAGE, BEET_ALEPH_PACKAGE],
   })
 
   tm.clearUsages()
@@ -378,7 +378,7 @@ test('type-mapper: composite with type extensions - publicKey', (t) => {
   )
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_SOLANA_PACKAGE, BEET_PACKAGE],
+    ...[BEET_SOLANA_ALEPH_PACKAGE, BEET_ALEPH_PACKAGE],
   })
   t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
   t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -397,7 +397,7 @@ test('type-mapper: composite types multilevel - option<option<number>>', (t) => 
   t.equal(ty, 'beet.COption<beet.COption<beet.bignum>>')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
 
   tm.clearUsages()
@@ -405,7 +405,7 @@ test('type-mapper: composite types multilevel - option<option<number>>', (t) => 
   t.equal(serde, 'beet.coption(beet.coption(beet.u64))')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
   t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -423,7 +423,7 @@ test('type-mapper: composite types multilevel - option<option<publicKey>>', (t) 
   t.equal(ty, 'beet.COption<beet.COption<web3.PublicKey>>')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[SOLANA_WEB3_PACKAGE, BEET_PACKAGE],
+    ...[SOLANA_WEB3_PACKAGE, BEET_ALEPH_PACKAGE],
   })
 
   tm.clearUsages()
@@ -431,7 +431,7 @@ test('type-mapper: composite types multilevel - option<option<publicKey>>', (t) 
   t.equal(serde, 'beet.coption(beet.coption(beetSolana.publicKey))')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_SOLANA_PACKAGE, BEET_PACKAGE],
+    ...[BEET_SOLANA_ALEPH_PACKAGE, BEET_ALEPH_PACKAGE],
   })
   t.equal(tm.localImportsByPath.size, 0, 'used no local imports')
   t.ok(tm.usedFixableSerde, 'used fixable serde')
@@ -455,7 +455,7 @@ test('type-mapper: composite types multilevel - vec<option<ConfigData>>', (t) =>
   t.equal(ty, 'beet.COption<ConfigData>[]')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   spok(t, Array.from(tm.localImportsByPath), {
     $topic: 'local imports',
@@ -467,7 +467,7 @@ test('type-mapper: composite types multilevel - vec<option<ConfigData>>', (t) =>
   t.equal(serde, 'beet.array(beet.coption(configDataBeet))')
   spok(t, Array.from(tm.serdePackagesUsed), {
     $topic: 'serdePackagesUsed',
-    ...[BEET_PACKAGE],
+    ...[BEET_ALEPH_PACKAGE],
   })
   spok(t, Array.from(tm.localImportsByPath), {
     $topic: 'local imports',
@@ -518,7 +518,7 @@ test('type-mapper: serde fields', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.notOk(tm.usedFixableSerde, 'did not use fixable serde')
   }
@@ -536,7 +536,7 @@ test('type-mapper: serde fields', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_SOLANA_PACKAGE, BEET_PACKAGE],
+      ...[BEET_SOLANA_ALEPH_PACKAGE, BEET_ALEPH_PACKAGE],
     })
     t.ok(tm.usedFixableSerde, 'used fixable serde')
   }
@@ -571,7 +571,7 @@ test('type-mapper: serde fields', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE, BEET_SOLANA_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE, BEET_SOLANA_ALEPH_PACKAGE],
     })
     spok(t, Array.from(tm.localImportsByPath), {
       $topic: 'local imports',
@@ -594,8 +594,8 @@ test('type-mapper: imports for serde packages used ', (t) => {
     t.comment('+++ imports for three packages')
     const packsUsed = <SerdePackage[]>[
       SOLANA_WEB3_PACKAGE,
-      BEET_PACKAGE,
-      BEET_SOLANA_PACKAGE,
+      BEET_ALEPH_PACKAGE,
+      BEET_SOLANA_ALEPH_PACKAGE,
     ]
     for (const pack of packsUsed) {
       tm.serdePackagesUsed.add(pack)
@@ -612,7 +612,7 @@ test('type-mapper: imports for serde packages used ', (t) => {
     tm.clearUsages()
 
     t.comment('+++ imports for one package')
-    const packsUsed = <SerdePackage[]>[BEET_PACKAGE]
+    const packsUsed = <SerdePackage[]>[BEET_ALEPH_PACKAGE]
     for (const pack of packsUsed) {
       tm.serdePackagesUsed.add(pack)
     }
@@ -654,7 +654,7 @@ test('type-mapper: user defined - aliased', (t) => {
 
     spok(t, Array.from(tm.serdePackagesUsed), {
       $topic: 'serdePackagesUsed',
-      ...[BEET_PACKAGE],
+      ...[BEET_ALEPH_PACKAGE],
     })
     t.equal(tm.localImportsByPath.size, 0, 'did not use local imports')
     t.notOk(tm.usedFixableSerde, 'did not use fixable serde')

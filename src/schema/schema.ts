@@ -10,39 +10,34 @@ import {
   Idl,
   isIdlDefinedType,
   isIdlTypeEnum,
-  isShankIdl,
   PrimitiveTypeKey,
-} from './types'
+} from '../'
+
 import {
   logDebug,
   logError,
   logTrace,
   prependGeneratedWarning,
   prepareTargetDir,
-} from './utils'
+} from '../solita/utils'
+
 import { format, Options } from 'prettier'
-import { Paths } from './paths'
+import { Paths } from '../solita/paths'
 /*
 import { validate } from 'graphql/validation' // CommonJS
 import  { buildSchema, parse } from 'graphql'
 */
 import  { validateSchema, buildSchema } from 'graphql'
 
-export * from './types'
-
 export class Schema {
   private readonly formatCode: boolean
   private readonly formatOpts: Options
-  private readonly accountsHaveImplicitDiscriminator: boolean
   private readonly prependGeneratedWarning: boolean
   private readonly typeAliases: Map<string, PrimitiveTypeKey>
   private paths: Paths | undefined
   constructor(
     private readonly idl: Idl,
     {
-      formatCode = false,
-      formatOpts = {},
-      prependGeneratedWarning = true,
       typeAliases: aliases = {},
     }: {
       formatCode?: boolean
@@ -54,7 +49,6 @@ export class Schema {
     this.formatCode = false
     this.formatOpts = {}
     this.prependGeneratedWarning = false
-    this.accountsHaveImplicitDiscriminator = !isShankIdl(idl)
     this.typeAliases = new Map(Object.entries(aliases))
   }
 
@@ -93,7 +87,6 @@ export class Schema {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
-    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -163,7 +156,6 @@ export class Schema {
       logTrace('accounts: %O', ix.accounts)
       let code = renderInstruction(
         ix,
-        programId,
         accountFiles,
         customFiles,
         this.typeAliases,
@@ -184,8 +176,6 @@ export class Schema {
         accountFiles,
         customFiles,
         this.typeAliases,
-        this.resolveFieldType,
-        this.accountsHaveImplicitDiscriminator
       )
       if (this.prependGeneratedWarning) {
         code = prependGeneratedWarning(code)
@@ -223,9 +213,9 @@ export class Schema {
 
   async renderAndWriteTo(outputDir: PathLike) {
     this.paths = new Paths(outputDir)
-    const { instructions, accounts, types, errors } = await this.renderCode()
+    const { instructions, accounts, types } = await this.renderCode()
 
-    await this.writeSchema(instructions, accounts, types, errors)
+    await this.writeSchema(instructions, accounts, types)
   }
 
   // -----------------
@@ -261,29 +251,47 @@ export class Schema {
     assert(this.paths != null, 'should have set paths')
 
     let outputcode = ""
-    let query = ""
     for (const [name, code] of Object.entries(accounts)) {
       logDebug('Writing accounts: %s', name)
       outputcode += code
-      query += "\t" + this.lowerCase(name) + ":" + " [" + name + "!]!\n"
     }
-    return [outputcode, query]
+    return outputcode
   }
 
   // -----------------
   // Main Index File
   // -----------------
 
-  async writeSchema(instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string>, errors: string | null) {
+  async writeSchema(instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string>) {
     assert(this.paths != null, 'should have set paths')
-    let schema = `
-scalar Datetime
+    let schema = `scalar Datetime
 scalar PublicKey
 scalar GraphQLLong
 scalar Null
 
+schema {
+\tquery: Query
+}
+
 type Query {
-\tintructionHistory: [Instruction!]!
+\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
+\taccounts(type: AccountType, accounts: String): [Account]
+\tglobalStats(type: AccountType, accounts: String): GlobalStats
+}
+
+type AccessStats {
+\trequests1h: Int
+\trequests24h: Int
+\trequests7d: Int
+\trequestsTotal: Int
+\taccessingPrograms: [String]
+}
+
+type GlobalStats {
+\ttotalAccounts: TotalAccounts
+\ttotalRequests: GraphQLLong
+\ttotalUniqueAccessingPrograms: Int
+}
 `
     let code = ''
     await prepareTargetDir(this.paths.root)
@@ -295,18 +303,96 @@ type Query {
 
     if (Object.keys(instructions).length !== 0) {
       code += '\n\n#*--------INSTRUCTIONS--------*#\n\n\n'
-      code += `interface Instruction {
-\tsignature: String
+      let stats =`type InstructionStats {
+`
+      schema += `
+interface Instruction {
+\tid: String
+\ttype: InstructionType
 \ttimestamp: Datetime
-}`
+\tprogramId: String
+\taccount: String
+}
+
+enum InstructionType {
+`
+      for (const [name] of Object.entries(instructions)) {
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
+        stats += '\t'+ name + ': Int,\n'
+      }
+      schema += `}
+
+      
+` + stats + '}\n'
       code += this.writeInstructions(instructions)
     }
     if (Object.keys(accounts).length !== 0) {
+      schema += `
+interface Account {
+\tname: String
+\ttype: AccountType
+\taddress: String
+\tstats: AccessStats
+\tdata: AccountsData
+}
+
+type TotalAccounts {
+`
+for (const [name] of Object.entries(accounts)) {
+  schema += '\t' + name.charAt(0).toUpperCase().concat(name.slice(1)) + ': Int\n'
+}
+schema = schema.slice(0, schema.length-1)
+
+schema += `}
+
+union Accounts = `
+for (const [name] of Object.entries(accounts)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + ' | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union AccountsData = `
+for (const [name] of Object.entries(accounts)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union Instructions = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Instruction | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union InstructionAccounts = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionAccounts | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+union InstructionArgs = `
+for (const [name] of Object.entries(instructions)) {
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+}
+schema = schema.slice(0, schema.length-2)
+
+schema += `
+
+enum AccountType {
+`
+      for (const [name] of Object.entries(accounts)) {
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+      }
+      schema += `}
+`
+
       code += '\n\n\n#*--------ACCOUNTS--------*#\n\n'
-      let [_accounts, query] = this.writeAccounts(accounts)
-      schema += query + "}\n\n"
-      code += _accounts
+      code += this.writeAccounts(accounts)
     }
+
 
     schema += code
 
@@ -318,10 +404,6 @@ type Query {
     if(schemaCheck.length == 0) {
       console.log("Schema correct!")
     }
-  }
-  private lowerCase(word: string) {
-    const capizalized = word.charAt(0).toLowerCase() + word.slice(1);
-    return capizalized
   }
 }
 

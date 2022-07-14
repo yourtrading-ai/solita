@@ -2,13 +2,15 @@
   "name": "@metaplex-foundation/solita",
   "version": "0.7.0",
   "description": "Generates SDK API from solana contract IDL.",
-  "main": "dist/src/script.js",
-  "types": "dist/src/script.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "bin": {
-    "solita": "dist/src/script.js"
+    "solita": "dist/src/solita/cli/solita.js"
   },
   "scripts": {
     "check:publish-ready": "yarn build && if test \"$SKIP_TESTS\" = \"1\" ; then echo \"WARN: Skipping Tests\"; else yarn test; fi",
+    "clean:all": "rm -rf ./node_modules && rm -rf ./dist && rm -rf package-lock.json && rm -rf ./generated",
+    "run:script": "npm run clean:all && npm install --legacy-peer-deps && npm run build && node ./scripts/api-gen-ts.js",
     "preversion": "yarn check:publish-ready",
     "prepare": "npm run build",
     "prepublishOnly": "yarn check:publish-ready",
@@ -50,21 +52,20 @@
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
-    "@metaplex-foundation/beet": "^0.2.0",
-    "@metaplex-foundation/beet-solana": "^0.1.1",
+    "@metaplex-foundation/beet": "^0.3.0",
+    "@metaplex-foundation/beet-solana": "^0.2.0",
     "@metaplex-foundation/rustbin": "^0.3.1",
     "@solana/web3.js": "^1.43.1",
     "camelcase": "^6.3.0",
     "debug": "^4.3.4",
     "graphql": "^16.5.0",
-    "graphql-toolkit": "^0.7.5",
     "js-sha256": "^0.9.0",
     "prettier": "^2.6.2",
     "snake-case": "^3.0.4",
     "spok": "^1.4.3"
   },
   "devDependencies": {
-    "@metaplex-foundation/amman": "^0.9.0",
+    "@metaplex-foundation/amman": "^0.0.12",
     "@project-serum/anchor": "^0.24.2",
     "@types/debug": "^4.1.7",
     "@types/eslint": "^8.4.2",
@@ -86,8 +87,5 @@
     "tape": "^5.5.3",
     "typedoc": "^0.22.15",
     "typescript": "^4.7.2"
-  },
-  "peerDependencies": {
-    "graphql": "^16.5.0"
   }
 }
