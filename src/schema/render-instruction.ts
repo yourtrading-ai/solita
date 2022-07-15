@@ -35,8 +35,8 @@ class InstructionRenderer {
 
     this.camelIxName = ix.name.charAt(0).toLowerCase().concat(ix.name.slice(1))
 
-    this.argsTypename = `${this.upperCamelIxName}InstructionArgs`
-    this.accountsTypename = `${this.upperCamelIxName}InstructionAccounts`
+    this.argsTypename = `${this.upperCamelIxName}_Args`
+    this.accountsTypename = `${this.upperCamelIxName}_Accounts`
     this.accounts = `${this.upperCamelIxName}Accounts`
     this.instructionDiscriminatorName = `${this.camelIxName}InstructionDiscriminator`
     this.structArgName = `${ix.name}Struct`
@@ -130,7 +130,7 @@ type ${this.accountsTypename} {
 return`${accountsType}
 ${ixArgType}
 
-type ${this.upperCamelIxName}Instruction implements Instruction {
+type ${this.upperCamelIxName} implements Instruction {
 \tid: String
 \ttype: InstructionType
 \ttimestamp: Datetime

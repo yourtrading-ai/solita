@@ -274,7 +274,7 @@ schema {
 }
 
 type Query {
-\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
+\tinstructionHistory(account: String, types: [InstructionType], startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
 \taccounts(type: AccountType, accounts: String): [Account]
 \tglobalStats(type: AccountType, accounts: String): GlobalStats
 }
@@ -317,7 +317,7 @@ interface Instruction {
 enum InstructionType {
 `
       for (const [name] of Object.entries(instructions)) {
-        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
         stats += '\t'+ name + ': Int,\n'
       }
       schema += `}
@@ -365,22 +365,22 @@ schema = schema.slice(0, schema.length-2)
 schema += `
 union Instructions = `
 for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Instruction | '
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + ' | '
 }
 schema = schema.slice(0, schema.length-2)
 
 schema += `
 union InstructionAccounts = `
 for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionAccounts | '
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_InstructionAccounts | '
 }
 schema = schema.slice(0, schema.length-2)
 
 schema += `
 union InstructionArgs = `
 for (const [name,code] of Object.entries(instructions)) {
-  if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + 'InstructionArgs')) {
-    schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+  if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + '_InstructionArgs')) {
+    schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_InstructionArgs | '
   }
 }
 schema = schema.slice(0, schema.length-2)
