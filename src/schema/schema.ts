@@ -378,8 +378,10 @@ schema = schema.slice(0, schema.length-2)
 
 schema += `
 union InstructionArgs = `
-for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+for (const [name,code] of Object.entries(instructions)) {
+  if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + 'InstructionArgs')) {
+    schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+  }
 }
 schema = schema.slice(0, schema.length-2)
 

@@ -118,7 +118,14 @@ type ${this.accountsTypename} {
     const processedKeys = this.processIxAccounts()
     const accountsType = this.renderAccountsType(processedKeys)
     const accountsArg = this.renderAccountsArg(processedKeys)
-    const createInstructionArgs = `args: ${this.argsTypename}`
+
+    //Make sure the InstructionArgs exists (it doesnt if it was empty)
+    let createInstructionArgs;
+    if(ixArgType.includes(this.argsTypename)) {
+      createInstructionArgs = `args: ${this.argsTypename}`
+    }else{
+      createInstructionArgs = `args: Null`
+    }
 
 return`${accountsType}
 ${ixArgType}
