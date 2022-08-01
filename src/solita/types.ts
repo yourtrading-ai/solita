@@ -100,6 +100,27 @@ export type IdlAccount = {
   type: IdlAccountType
 }
 
+export type IdlError = {
+  code: number
+  name: string
+  msg?: string
+}
+
+export type Idl = {
+  version: string
+  name: string
+  instructions: IdlInstruction[]
+  state?: IdlState;
+  accounts?: IdlAccount[]
+  types?: IdlDefinedTypeDefinition[]
+  errors?: IdlError[]
+  events?: IdlEvent[];
+  constants?: IdlConstant[];
+  metadata: {
+    address: string
+  }
+}
+
 export type IdlEvent = {
   name: string;
   fields: IdlEventField[];
@@ -111,14 +132,8 @@ export type IdlEventField = {
   index: boolean;
 };
 
-export type IdlError = {
-  code: number
-  name: string
-  msg?: string
-}
-
 export type IdlState = {
-  struct: IdlAccount;
+  struct: IdlDefinedType;
   methods: IdlInstruction[];
 };
 
@@ -127,21 +142,6 @@ export type IdlConstant = {
   type: IdlType;
   value: string;
 };
-
-export type Idl = {
-  version: string
-  name: string
-  instructions: IdlInstruction[]
-  state?: IdlState;
-  accounts?: IdlAccount[]
-  errors?: IdlError[]
-  types?: IdlDefinedTypeDefinition[]
-  events?: IdlEvent[];
-  constants?: IdlConstant[];
-  metadata: {
-    address: string
-  }
-}
 
 // -----------------
 // Shank Idl Extensions
