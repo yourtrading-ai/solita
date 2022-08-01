@@ -55,19 +55,34 @@ class AccountRenderer {
       .map((f) => colonSeparatedTypedField(f))
       .join('\n\t')
 
-    return `
+
+    //Make sure to only print Data when it actually has content
+    if(renderedFields.length==0){
+      return `
 type ${this.accountDataArgsTypeName} implements Account {
 \tname: String
 \ttype: AccountType
 \taddress: String
 \tstats: AccessStats
-\tdata: ${this.accountDataArgsTypeName}Data
+\tdata: Null
+}
+`
+    }else {
+
+      return `
+type ${this.accountDataArgsTypeName} implements Account {
+\tname: String
+\ttype: AccountType
+\taddress: String
+\tstats: AccessStats
+\tdata: ${this.accountDataArgsTypeName}_Data
 }
 
-type ${this.accountDataArgsTypeName}Data {
+type ${this.accountDataArgsTypeName}_Data {
 \t${renderedFields}
 }
 `
+    }
   }
 
 

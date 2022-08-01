@@ -274,7 +274,7 @@ schema {
 }
 
 type Query {
-\tinstructionHistory(account: String, types: InstructionType, startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
+\tinstructionHistory(account: String, types: [InstructionType], startDate: Int, endDate: Int, limit: Int, skip: Int, reverse: Boolean): [Instruction]
 \taccounts(type: AccountType, accounts: String): [Account]
 \tglobalStats(type: AccountType, accounts: String): GlobalStats
 }
@@ -296,36 +296,6 @@ type GlobalStats {
     let code = ''
     await prepareTargetDir(this.paths.root)
 
-    if (Object.keys(types).length !== 0) {
-      code += '\n#*--------TYPES--------*#\n\n\n'
-      code += this.writeTypes(types)
-    }
-
-    if (Object.keys(instructions).length !== 0) {
-      code += '\n\n#*--------INSTRUCTIONS--------*#\n\n\n'
-      let stats =`type InstructionStats {
-`
-      schema += `
-interface Instruction {
-\tid: String
-\ttype: InstructionType
-\ttimestamp: Datetime
-\tprogramId: String
-\taccount: String
-}
-
-enum InstructionType {
-`
-      for (const [name] of Object.entries(instructions)) {
-        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data,\n'
-        stats += '\t'+ name + ': Int,\n'
-      }
-      schema += `}
-
-      
-` + stats + '}\n'
-      code += this.writeInstructions(instructions)
-    }
     if (Object.keys(accounts).length !== 0) {
       schema += `
 interface Account {
@@ -353,29 +323,35 @@ schema = schema.slice(0, schema.length-2)
 
 schema += `
 union AccountsData = `
-for (const [name] of Object.entries(accounts)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Data | '
+  for (const [name,code] of Object.entries(accounts)) {
+
+    //Makes sure to only make the _Data AccountsData, if there the type exists (the type doesnt exist, if the content was null)
+    if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + "_Data")){
+      schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_Data | '
+    }
 }
 schema = schema.slice(0, schema.length-2)
 
 schema += `
 union Instructions = `
 for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'Instruction | '
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + ' | '
 }
 schema = schema.slice(0, schema.length-2)
 
 schema += `
 union InstructionAccounts = `
 for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionAccounts | '
+  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_Accounts | '
 }
 schema = schema.slice(0, schema.length-2)
 
 schema += `
 union InstructionArgs = `
-for (const [name] of Object.entries(instructions)) {
-  schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + 'InstructionArgs | '
+for (const [name,code] of Object.entries(instructions)) {
+  if(code.includes((name.charAt(0).toUpperCase().concat(name.slice(1))) + '_Args')) {
+    schema += name.charAt(0).toUpperCase().concat(name.slice(1)) + '_Args | '
+  }
 }
 schema = schema.slice(0, schema.length-2)
 
@@ -393,6 +369,36 @@ enum AccountType {
       code += this.writeAccounts(accounts)
     }
 
+    if (Object.keys(instructions).length !== 0) {
+      code += '\n\n#*--------INSTRUCTIONS--------*#\n\n\n'
+      let stats =`type InstructionStats {
+`
+      schema += `
+interface Instruction {
+\tid: String
+\ttype: InstructionType
+\ttimestamp: Datetime
+\tprogramId: String
+\taccount: String
+}
+
+enum InstructionType {
+`
+      for (const [name] of Object.entries(instructions)) {
+        schema += '\t'+ name.charAt(0).toUpperCase().concat(name.slice(1)) + ',\n'
+        stats += '\t'+ name + ': Int,\n'
+      }
+      schema += `}
+
+      
+` + stats + '}\n'
+      code += this.writeInstructions(instructions)
+    }
+
+    if (Object.keys(types).length !== 0) {
+      code += '\n#*--------TYPES--------*#\n\n\n'
+      code += this.writeTypes(types)
+    }
 
     schema += code
 
