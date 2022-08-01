@@ -100,19 +100,44 @@ export type IdlAccount = {
   type: IdlAccountType
 }
 
+export type IdlEvent = {
+  name: string;
+  fields: IdlEventField[];
+};
+
+export type IdlEventField = {
+  name: string;
+  type: IdlType;
+  index: boolean;
+};
+
 export type IdlError = {
   code: number
   name: string
   msg?: string
 }
 
+export type IdlState = {
+  struct: IdlAccount;
+  methods: IdlInstruction[];
+};
+
+export type IdlConstant = {
+  name: string;
+  type: IdlType;
+  value: string;
+};
+
 export type Idl = {
   version: string
   name: string
   instructions: IdlInstruction[]
+  state?: IdlState;
   accounts?: IdlAccount[]
   errors?: IdlError[]
   types?: IdlDefinedTypeDefinition[]
+  events?: IdlEvent[];
+  constants?: IdlConstant[];
   metadata: {
     address: string
   }
