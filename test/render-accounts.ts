@@ -4,7 +4,7 @@ import { SerdePackage } from '../src/solita/serdes'
 import { FORCE_FIXABLE_NEVER } from '../src/solita/type-mapper'
 import {
   BEET_SOLANA_ALEPH_PACKAGE,
-  IdlAccount,
+  IdlTypeDef,
   SOLANA_WEB3_PACKAGE,
   BEET_ALEPH_PACKAGE,
 } from '../src/solita/types'
@@ -20,7 +20,7 @@ const ACCOUNT_FILE_DIR = '/root/app/accounts/'
 
 async function checkRenderedAccount(
   t: Test,
-  account: IdlAccount,
+  account: IdlTypeDef,
   imports: SerdePackage[],
   opts: {
     logImports?: boolean
@@ -60,7 +60,7 @@ async function checkRenderedAccount(
 // TODO(thlorenz): Still renders args and causes compile issues
 // An accounts without a field is very uncommon and thus this can be fixed later
 test.skip('accounts: no field', async (t) => {
-  const account = <IdlAccount>{
+  const account = <IdlTypeDef>{
     name: 'AuctionHouse',
     type: {
       kind: 'struct',
@@ -73,7 +73,7 @@ test.skip('accounts: no field', async (t) => {
 })
 
 test('accounts: one field', async (t) => {
-  const account = <IdlAccount>{
+  const account = <IdlTypeDef>{
     name: 'AuctionHouse',
     type: {
       kind: 'struct',
@@ -81,40 +81,6 @@ test('accounts: one field', async (t) => {
         {
           name: 'auctionHouseFeeAccount',
           type: 'publicKey',
-        },
-      ],
-    },
-  }
-
-  await checkRenderedAccount(t, account, [
-    BEET_ALEPH_PACKAGE,
-    BEET_SOLANA_ALEPH_PACKAGE,
-    SOLANA_WEB3_PACKAGE,
-  ])
-  t.end()
-})
-
-test('accounts: four fields', async (t) => {
-  const account = <IdlAccount>{
-    name: 'AuctionHouse',
-    type: {
-      kind: 'struct',
-      fields: [
-        {
-          name: 'auctionHouseFeeAccount',
-          type: 'publicKey',
-        },
-        {
-          name: 'feePayerBump',
-          type: 'u8',
-        },
-        {
-          name: 'sellerFeeBasisPoints',
-          type: 'u16',
-        },
-        {
-          name: 'requiresSignOff',
-          type: 'bool',
         },
       ],
     },
@@ -129,7 +95,7 @@ test('accounts: four fields', async (t) => {
 })
 
 test('accounts: pretty function for different types', async (t) => {
-  const account = <IdlAccount>{
+  const account = <IdlTypeDef>{
     name: 'AuctionHouse',
     type: {
       kind: 'struct',

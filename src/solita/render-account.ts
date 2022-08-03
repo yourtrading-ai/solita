@@ -3,11 +3,11 @@ import { renderScalarEnums } from './render-enums'
 import { renderDataStruct } from './serdes'
 import { ForceFixable, TypeMapper } from './type-mapper'
 import {
-  IdlAccount,
   isIdlTypeDefined,
   PrimitiveTypeKey,
   ResolveFieldType,
   TypeMappedSerdeField,
+  IdlTypeDef
 } from './types'
 import {
   accountDiscriminator,
@@ -31,7 +31,7 @@ class AccountRenderer {
   readonly beetName: string
 
   constructor(
-    private readonly account: IdlAccount,
+    private readonly account: IdlTypeDef,
     private readonly fullFileDir: PathLike,
     private readonly hasImplicitDiscriminator: boolean,
     private readonly resolveFieldType: ResolveFieldType,
@@ -54,55 +54,110 @@ class AccountRenderer {
   }
 
   private serdeProcess() {
-    return this.typeMapper.mapSerdeFields(this.account.type.fields)
+    const type = this.account.type.kind
+    if(type == "enum"){
+      return this.typeMapper.mapSerdeFields(this.account.type.variants)
+    }
+    else{
+      return this.typeMapper.mapSerdeFields(this.account.type.fields)
+    }
   }
 
   // -----------------
   // Rendered Fields
   // -----------------
   private getTypedFields() {
-    return this.account.type.fields.map((f) => {
-      const tsType = this.typeMapper.map(f.type, f.name)
-      return { name: f.name, tsType }
-    })
+    const type = this.account.type.kind
+    if(type == "enum"){
+      return this.account.type.variants.map((f) => {
+        const tsType = this.typeMapper.map(f.type, f.name)
+        return { name: f.name, tsType }
+      })
+    }
+    else{
+      return this.account.type.fields.map((f) => {
+        const tsType = this.typeMapper.map(f.type, f.name)
+        return { name: f.name, tsType }
+      })
+    }
   }
 
   private getPrettyFields() {
-    return this.account.type.fields.map((f) => {
-      if (f.type === 'publicKey') {
-        return `${f.name}: this.${f.name}.toBase58()`
-      }
-      if (
-        f.type === 'u64' ||
-        f.type === 'u128' ||
-        f.type === 'u256' ||
-        f.type === 'u512' ||
-        f.type === 'i64' ||
-        f.type === 'i128' ||
-        f.type === 'i256' ||
-        f.type === 'i512'
-      ) {
-        return `${f.name}: (() => {
-        const x = <{ toNumber: () => number }>this.${f.name}
-        if (typeof x.toNumber === 'function') {
-          try {
-            return x.toNumber()
-          } catch (_) { return x }
+    const type = this.account.type.kind
+    if(type == "enum"){
+      return this.account.type.variants.map((f) => {
+        if (f.type === 'publicKey') {
+          return `${f.name}: this.${f.name}.toBase58()`
         }
-        return x
-      })()`
-      }
-      if (
-        isIdlTypeDefined(f.type) &&
-        this.resolveFieldType(f.type.defined)?.kind === 'enum'
-      ) {
-        const tsType = this.typeMapper.map(f.type, f.name)
-        const variant = `${tsType}[this.${f.name}`
-        return `${f.name}: '${f.type.defined}.' + ${variant}]`
-      }
-
-      return `${f.name}: this.${f.name}`
-    })
+        if (
+          f.type === 'u64' ||
+          f.type === 'u128' ||
+          f.type === 'u256' ||
+          f.type === 'u512' ||
+          f.type === 'i64' ||
+          f.type === 'i128' ||
+          f.type === 'i256' ||
+          f.type === 'i512'
+        ) {
+          return `${f.name}: (() => {
+          const x = <{ toNumber: () => number }>this.${f.name}
+          if (typeof x.toNumber === 'function') {
+            try {
+              return x.toNumber()
+            } catch (_) { return x }
+          }
+          return x
+        })()`
+        }
+        if (
+          isIdlTypeDefined(f.type) &&
+          this.resolveFieldType(f.type.defined)?.kind === 'enum'
+        ) {
+          const tsType = this.typeMapper.map(f.type, f.name)
+          const variant = `${tsType}[this.${f.name}`
+          return `${f.name}: '${f.type.defined}.' + ${variant}]`
+        }
+  
+        return `${f.name}: this.${f.name}`
+      })
+    }
+    else{
+      return this.account.type.fields.map((f) => {
+        if (f.type === 'publicKey') {
+          return `${f.name}: this.${f.name}.toBase58()`
+        }
+        if (
+          f.type === 'u64' ||
+          f.type === 'u128' ||
+          f.type === 'u256' ||
+          f.type === 'u512' ||
+          f.type === 'i64' ||
+          f.type === 'i128' ||
+          f.type === 'i256' ||
+          f.type === 'i512'
+        ) {
+          return `${f.name}: (() => {
+          const x = <{ toNumber: () => number }>this.${f.name}
+          if (typeof x.toNumber === 'function') {
+            try {
+              return x.toNumber()
+            } catch (_) { return x }
+          }
+          return x
+        })()`
+        }
+        if (
+          isIdlTypeDefined(f.type) &&
+          this.resolveFieldType(f.type.defined)?.kind === 'enum'
+        ) {
+          const tsType = this.typeMapper.map(f.type, f.name)
+          const variant = `${tsType}[this.${f.name}`
+          return `${f.name}: '${f.type.defined}.' + ${variant}]`
+        }
+  
+        return `${f.name}: this.${f.name}`
+      })
+    }
   }
 
   // -----------------
@@ -391,7 +446,7 @@ ${beetDecl}`
 }
 
 export function renderAccount(
-  account: IdlAccount,
+  account: IdlTypeDef,
   fullFileDir: PathLike,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,

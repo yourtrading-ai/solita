@@ -1,5 +1,5 @@
 import { TypeMapper } from './type-mapper'
-import { IdlAccount } from "../"
+import { IdlTypeDef } from "../"
 import {
   PrimitiveTypeKey,
 } from './types'
@@ -18,7 +18,7 @@ class AccountRenderer {
   readonly accountDataArgsTypeName: string
 
   constructor(
-    private readonly account: IdlAccount,
+    private readonly account: IdlTypeDef,
     private readonly typeMapper: TypeMapper
   ) {
     this.upperCamelAccountName = account.name
@@ -39,10 +39,19 @@ class AccountRenderer {
   // Rendered Fields
   // -----------------
   private getTypedFields() {
-    return this.account.type.fields.map((f) => {
-      const tsType = this.typeMapper.map(f.type, f.name)
-      return { name: f.name, tsType }
-    })
+    const type = this.account.type.kind
+    if(type == "enum"){
+      return this.account.type.variants.map((f) => {
+        const tsType = this.typeMapper.map(f.type, f.name)
+        return { name: f.name, tsType }
+      })
+    }
+    else{
+      return this.account.type.fields.map((f) => {
+        const tsType = this.typeMapper.map(f.type, f.name)
+        return { name: f.name, tsType }
+      })
+    }
   }
 
   // -----------------
@@ -100,7 +109,7 @@ type ${this.accountDataArgsTypeName}_Data {
 }
 
 export function renderAccount(
-  account: IdlAccount,
+  account: IdlTypeDef,
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,

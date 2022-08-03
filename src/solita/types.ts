@@ -62,6 +62,7 @@ export type IdlTypeArray = {
 
 export type IdlEnumVariant = {
   name: string
+  type: IdlType
 }
 
 export type IdlTypeEnum = {
@@ -85,9 +86,9 @@ export type IdlInstructionArg = {
 }
 
 export type IdlInstruction = {
-  name: string
-  accounts: IdlInstructionAccount[]
-  args: IdlInstructionArg[]
+  name: string;
+  accounts: IdlAccount[];
+  args: IdlField[];
 }
 
 export type IdlAccountType = {
@@ -96,8 +97,11 @@ export type IdlAccountType = {
 }
 
 export type IdlAccount = {
-  name: string
-  type: IdlAccountType
+  name: string;
+  isMut: boolean;
+  isSigner: boolean;
+  desc?: string
+  optional?: boolean
 }
 
 export type IdlError = {
@@ -106,20 +110,46 @@ export type IdlError = {
   msg?: string
 }
 
+export type IdlTypeDef = {
+  name: string;
+  type: IdlTypeDefTy;
+};
+
+
+export type IdlTypeDefTyStruct = {
+  kind: "struct";
+  fields: IdlTypeDefStruct;
+};
+
+type IdlTypeDefStruct = Array<IdlField>;
+
+export type IdlTypeDefTyEnum = {
+  kind: "enum";
+  variants: IdlEnumVariant[];
+};
+
+export type IdlTypeDefTy = IdlTypeDefTyEnum | IdlTypeDefTyStruct;
+
 export type Idl = {
-  version: string
-  name: string
-  instructions: IdlInstruction[]
+  version: string;
+  name: string;
+  instructions: IdlInstruction[];
   state?: IdlState;
-  accounts?: IdlAccount[]
-  types?: IdlDefinedTypeDefinition[]
-  errors?: IdlError[]
+  accounts?: IdlTypeDef[];
+  types?: IdlTypeDef[];
   events?: IdlEvent[];
+  errors?: IdlErrorCode[];
   constants?: IdlConstant[];
-  metadata: {
+  metadata?: {
     address: string
   }
 }
+
+export type IdlErrorCode = {
+  code: number;
+  name: string;
+  msg?: string;
+};
 
 export type IdlEvent = {
   name: string;
