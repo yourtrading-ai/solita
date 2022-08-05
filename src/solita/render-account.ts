@@ -223,7 +223,7 @@ export type ${this.accountDataArgsTypeName} = {
   static async getMinimumBalanceForRentExemption(
     args: ${this.accountDataArgsTypeName},
     connection: web3.Connection,
-    commitment?: web3.Commitment
+    commitment?: web3.Commitment,
   ): Promise<number> {
     return connection.getMinimumBalanceForRentExemption(
       ${this.accountDataClassName}.byteSize(args),
@@ -312,7 +312,7 @@ ${accountDiscriminatorVar};
  */
 export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeName} {
   private constructor(
-    ${constructorArgs}
+    ${constructorArgs},
   ) {}
 
   /**
@@ -320,7 +320,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
    */
   static fromArgs(args: ${this.accountDataArgsTypeName}) {
     return new ${this.accountDataClassName}(
-      ${constructorParams}
+      ${constructorParams},
     );
   }
 
@@ -330,7 +330,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
    */
   static fromAccountInfo(
     accountInfo: web3.AccountInfo<Buffer>,
-    offset = 0
+    offset = 0,
   ): [ ${this.accountDataClassName}, number ]  {
     return ${this.accountDataClassName}.deserialize(accountInfo.data, offset)
   }
@@ -347,7 +347,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
   ): Promise<${this.accountDataClassName}> {
     const accountInfo = await connection.getAccountInfo(address);
     if (accountInfo == null) {
-      throw new Error(\`Unable to find ${this.accountDataClassName} account at \${address}\`);
+      throw new Error(\`Unable to find ${this.accountDataClassName} account at \${address}\`,);
     }
     return ${this.accountDataClassName}.fromAccountInfo(accountInfo, 0)[0];
   }

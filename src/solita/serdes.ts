@@ -145,7 +145,7 @@ export function renderDataStruct({
     ${fieldDecls}
   ],
   ${className}.fromArgs,
-  '${className}'
+  '${className},'
 )`
   } else {
     const beetArgsStructType = isFixable
@@ -159,7 +159,7 @@ export function renderDataStruct({
     ${discriminatorDecl}
     ${fieldDecls}
   ],
-  '${argsTypename}'
+  '${argsTypename},'
 )`
   }
 }

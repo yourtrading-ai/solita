@@ -323,7 +323,7 @@ export ${struct}`.trim()
         ? ['', '', '']
         : [
             `\n * @param args to provide as instruction data to the program\n  *`,
-            `args: ${this.argsTypename}`,
+            `args: ${this.argsTypename},`,
             '...args',
           ]
     return `${imports}
