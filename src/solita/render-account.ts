@@ -19,7 +19,7 @@ function colonSeparatedTypedField(
   field: { name: string; tsType: string },
   prefix = ''
 ) {
-  return `${prefix}${field.name}: ${field.tsType}`
+  return `${prefix}${field.name}: ${field.tsType},`
 }
 
 class AccountRenderer {
@@ -284,11 +284,11 @@ export type ${this.accountDataArgsTypeName} = {
   private renderAccountDataClass(fields: { name: string; tsType: string }[]) {
     const constructorArgs = fields
       .map((f) => colonSeparatedTypedField(f, 'readonly '))
-      .join(',\n    ')
+      .join('\n    ')
 
     const constructorParams = fields
-      .map((f) => `args.${f.name}`)
-      .join(',\n      ')
+      .map((f) => `args.${f.name},`)
+      .join('\n      ')
 
     const prettyFields = this.getPrettyFields().join(',\n      ')
     const byteSizeMethods = this.renderByteSizeMethods()
@@ -312,7 +312,7 @@ ${accountDiscriminatorVar};
  */
 export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeName} {
   private constructor(
-    ${constructorArgs},
+    ${constructorArgs}
   ) {}
 
   /**
@@ -320,7 +320,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
    */
   static fromArgs(args: ${this.accountDataArgsTypeName}) {
     return new ${this.accountDataClassName}(
-      ${constructorParams},
+      ${constructorParams}
     );
   }
 
@@ -383,7 +383,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
       ${prettyFields}
     };
   }
-}`.trim()
+}`
   }
 
   // -----------------

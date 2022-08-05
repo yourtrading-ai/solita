@@ -159,7 +159,7 @@ export function renderDataStruct({
     ${discriminatorDecl}
     ${fieldDecls}
   ],
-  '${argsTypename},'
+  '${argsTypename}',
 )`
   }
 }

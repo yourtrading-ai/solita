@@ -165,14 +165,6 @@ export class Solita {
         if (this.prependGeneratedWarning) {
           code = prependGeneratedWarning(code)
         }
-        if (this.formatCode) {
-          try {
-            code = format(code, this.formatOpts)
-          } catch (err) {
-            logError(`Failed to format ${ty.name} instruction`)
-            logError(err)
-          }
-        }
         types[ty.name] = code
       }
     }
@@ -196,14 +188,6 @@ export class Solita {
       if (this.prependGeneratedWarning) {
         code = prependGeneratedWarning(code)
       }
-      if (this.formatCode) {
-        try {
-          code = format(code, this.formatOpts)
-        } catch (err) {
-          logError(`Failed to format ${ix.name} instruction`)
-          logError(err)
-        }
-      }
       instructions[ix.name] = code
     }
 
@@ -226,14 +210,6 @@ export class Solita {
       )
       if (this.prependGeneratedWarning) {
         code = prependGeneratedWarning(code)
-      }
-      if (this.formatCode) {
-        try {
-          code = format(code, this.formatOpts)
-        } catch (err) {
-          logError(`Failed to format ${account.name} account`)
-          logError(err)
-        }
       }
       accounts[account.name] = code
     }
