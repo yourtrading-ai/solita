@@ -349,7 +349,7 @@ ${accountsParamDoc}${createInstructionArgsComment}
  * @category generated
  */
 export function create${this.upperCamelIxName}Instruction(
-  ${accountsArg}${createInstructionArgs},
+  ${accountsArg}${createInstructionArgs}
 ) : ${this.upperCamelIxName}Instruction{
   ${accountsDestructure}
   const [data ] = ${this.structArgName}.serialize({ 
