@@ -152,13 +152,13 @@ ${typeMapperImports.join('\n')}`.trim()
       .map(({ name, isMut, isSigner, knownPubkey }) => {
         const access =
           knownPubkey == null ? name : renderKnownPubkeyAccess(knownPubkey)
-        return `{
-      pubkey: ${access},
-      isWritable: ${isMut.toString()},
-      isSigner: ${isSigner.toString()},
-    }`
-      })
-      .join(',\n    ')
+            return `{
+  pubkey: ${access},
+  isWritable: ${isMut.toString()},
+  isSigner: ${isSigner.toString()},
+}`; 
+    })
+        .join(',\n    ');
 
     const optionalKeys =
       optionals.length > 0
@@ -349,7 +349,7 @@ ${accountsParamDoc}${createInstructionArgsComment}
  * @category generated
  */
 export function create${this.upperCamelIxName}Instruction(
-  ${accountsArg}${createInstructionArgs}
+  ${accountsArg}${createInstructionArgs},
 ) : ${this.upperCamelIxName}Instruction{
   ${accountsDestructure}
   const [data ] = ${this.structArgName}.serialize({ 
