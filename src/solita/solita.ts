@@ -14,6 +14,10 @@ import {
   isIdlTypeEnum,
   isShankIdl,
   PrimitiveTypeKey,
+  Serializers,
+  IdlTypeDataEnum,
+  IdlTypeEnum,
+  IdlDefinedType,
 } from './types'
 import {
   logDebug,
@@ -25,6 +29,8 @@ import {
 } from './utils'
 import { format, Options } from 'prettier'
 import { Paths } from './paths'
+import { CustomSerializers } from './serializers'
+import { renderAccountProviders } from './render-account-providers'
 
 export * from './types'
 
@@ -45,6 +51,9 @@ export class Solita {
   private readonly accountsHaveImplicitDiscriminator: boolean
   private readonly prependGeneratedWarning: boolean
   private readonly typeAliases: Map<string, PrimitiveTypeKey>
+  private readonly serializers: CustomSerializers
+  private readonly projectRoot: string
+  private readonly hasInstructions: boolean
   private paths: Paths | undefined
   constructor(
     private readonly idl: Idl,
@@ -52,25 +61,35 @@ export class Solita {
       formatCode = false,
       formatOpts = {},
       prependGeneratedWarning = true,
-      typeAliases: aliases = {},
+      typeAliases = {},
+      serializers = {},
+      projectRoot = process.cwd(),
     }: {
       formatCode?: boolean
       formatOpts?: Options
       prependGeneratedWarning?: boolean
       typeAliases?: TypeAliases
+      serializers?: Serializers
+      projectRoot?: string
     } = {}
   ) {
+    this.projectRoot = projectRoot
     this.formatCode = formatCode
     this.formatOpts = { ...DEFAULT_FORMAT_OPTS, ...formatOpts }
     this.prependGeneratedWarning = prependGeneratedWarning
     this.accountsHaveImplicitDiscriminator = !isShankIdl(idl)
-    this.typeAliases = new Map(Object.entries(aliases))
+    this.typeAliases = new Map(Object.entries(typeAliases))
+    this.serializers = CustomSerializers.create(
+      this.projectRoot,
+      new Map(Object.entries(serializers))
+    )
+    this.hasInstructions = idl.instructions.length > 0
   }
 
   // -----------------
   // Extract
   // -----------------
-  accountFilesByType() {
+  private accountFilesByType() {
     assert(this.paths != null, 'should have set paths')
     return new Map(
       this.idl.accounts?.map((x) => [
@@ -80,14 +99,16 @@ export class Solita {
     )
   }
 
-  customFilesByType() {
+  private customFilesByType() {
     assert(this.paths != null, 'should have set paths')
     return new Map(
       this.idl.types?.map((x) => [x.name, this.paths!.typeFile(x.name)]) ?? []
     )
   }
 
-  resolveFieldType = (typeName: string) => {
+  private resolveFieldType = (
+    typeName: string
+  ): IdlDefinedType | IdlTypeEnum | IdlTypeDataEnum | null => {
     for (const acc of this.idl.accounts ?? []) {
       if (acc.name === typeName) return acc.type
     }
@@ -102,6 +123,7 @@ export class Solita {
   renderCode() {
     assert(this.paths != null, 'should have set paths')
 
+    const programId = this.idl.metadata.address
     const fixableTypes: Set<string> = new Set()
     const accountFiles = this.accountFilesByType()
     const customFiles = this.customFilesByType()
@@ -220,7 +242,9 @@ export class Solita {
         accountFiles,
         customFiles,
         this.typeAliases,
+        this.serializers,
         forceFixable,
+        programId,
         this.resolveFieldType,
         this.accountsHaveImplicitDiscriminator
       )
@@ -262,8 +286,12 @@ export class Solita {
   async renderAndWriteTo(outputDir: PathLike) {
     this.paths = new Paths(outputDir)
     const { instructions, accounts, types, errors } = this.renderCode()
-    const reexports = ['instructions']
-    await this.writeInstructions(instructions)
+    const reexports = []
+
+    if (this.hasInstructions) {
+      reexports.push('instructions')
+      await this.writeInstructions(instructions)
+    }
 
     if (Object.keys(accounts).length !== 0) {
       reexports.push('accounts')
@@ -317,9 +345,11 @@ export class Solita {
       await fs.writeFile(this.paths.accountFile(name), code, 'utf8')
     }
     logDebug('Writing index.ts exporting all accounts')
+    const accountProvidersCode = renderAccountProviders(this.idl.accounts)
     const indexCode = this.renderExportsIndex(
       Object.keys(accounts).sort(),
-      'accounts'
+      'accounts',
+      accountProvidersCode
     )
     await fs.writeFile(this.paths.accountFile('index'), indexCode, 'utf8')
   }
@@ -361,7 +391,7 @@ export class Solita {
   // Main Index File
   // -----------------
 
-  async writeMainIndex(reexports: string[], instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string> ) {
+  private async writeMainIndex(reexports: string[], instructions: Record<string, string>, accounts: Record<string, string>, types: Record<string, string> ) {
     assert(this.paths != null, 'should have set paths')
 
     const reexportCode = this.renderExportsIndex(reexports.sort(), 'main')
@@ -471,9 +501,16 @@ ${unionTypes}
     return code
   }
 
-  private renderImportInstructionIndex(modules: string[], label: string) {
+  private renderImportInstructionIndex(
+    modules: string[],
+    label: string,
+    extraContent?: string
+  ) {
+    let code = modules.map((x) => `export * from './${x}';`).join('\n')
+    if (extraContent != null) {
+      code += `\n\n${extraContent}`
+    }
     let count = 0
-    let code = modules.map((x) => `export * from './${x}.js';`).join('\n') + '\n' + '\n'
     code = code + modules.map((x) => `import * as ${x} from './${x}.js';`).join('\n')  + '\n' + '\n'
 
     code = code + `export enum InstructionType {`+'\n'
@@ -487,7 +524,7 @@ ${unionTypes}
 
     code = code + `export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {` + '\n'
     code = code + modules.map((x) => `[InstructionType.${x}]: ${x}.${this.capitalize(x)}Accounts,`).join('\n')  + '\n' + '\n' + '}'
-    
+
     if (this.formatCode) {
       try {
         code = format(code, this.formatOpts)
@@ -505,5 +542,3 @@ ${unionTypes}
     return capizalized
   }
 }
-
-

@@ -12,11 +12,18 @@ import {
   BeetSolanaTypeMapKey,
 } from '@metaplex-foundation/beet-solana'
 import { SerdePackage } from './serdes'
+import { strict as assert } from 'assert'
 
 // -----------------
 // Config
 // -----------------
 export type TypeAliases = Record<string, PrimitiveTypeKey>
+/**
+ * Key: account name for which to customize de/serializer
+ * Value: path to module from project root providing `serialize` and/or
+ *        `deserialize` methods
+ */
+export type Serializers = Record<string, string>
 
 // -----------------
 // IDL
@@ -24,7 +31,9 @@ export type TypeAliases = Record<string, PrimitiveTypeKey>
 export type IdlField = {
   name: string
   type: IdlType
+  attrs?: string[]
 }
+export const IDL_FIELD_ATTR_PADDING = 'padding'
 
 export type IdlInstructionAccount = {
   name: string
@@ -42,6 +51,7 @@ export type IdlType =
   | IdlTypeVec
   | IdlTypeArray
   | IdlTypeEnum
+  | IdlTypeDataEnum
 
 // User defined type.
 export type IdlTypeDefined = {
@@ -64,9 +74,20 @@ export type IdlEnumVariant = {
   name: string
 }
 
-export type IdlTypeEnum = {
+export type IdlDataEnumVariant = {
+  name: string
+  fields: IdlField[]
+}
+
+export type IdlTypeEnum = IdlTypeScalarEnum | IdlTypeDataEnum
+export type IdlTypeScalarEnum = {
   kind: 'enum'
   variants: IdlEnumVariant[]
+}
+
+export type IdlTypeDataEnum = {
+  kind: 'enum'
+  variants: IdlDataEnumVariant[]
 }
 
 export type IdlDefinedType = {
@@ -76,7 +97,7 @@ export type IdlDefinedType = {
 
 export type IdlDefinedTypeDefinition = {
   name: string
-  type: IdlDefinedType | IdlTypeEnum
+  type: IdlDefinedType | IdlTypeEnum | IdlTypeDataEnum
 }
 
 export type IdlInstructionArg = {
@@ -179,6 +200,11 @@ export function isIdlTypeArray(ty: IdlType): ty is IdlTypeArray {
   return (ty as IdlTypeArray).array != null
 }
 
+export function asIdlTypeArray(ty: IdlType): IdlTypeArray {
+  assert(isIdlTypeArray(ty))
+  return ty
+}
+
 export function isIdlTypeDefined(ty: IdlType): ty is IdlTypeDefined {
   return (ty as IdlTypeDefined).defined != null
 }
@@ -187,6 +213,23 @@ export function isIdlTypeEnum(
   ty: IdlType | IdlDefinedType | IdlTypeEnum
 ): ty is IdlTypeEnum {
   return (ty as IdlTypeEnum).variants != null
+}
+
+export function isIdlTypeDataEnum(
+  ty: IdlType | IdlDefinedType | IdlTypeEnum
+): ty is IdlTypeDataEnum {
+  const dataEnum = ty as IdlTypeDataEnum
+  return (
+    dataEnum.variants != null &&
+    dataEnum.variants.length > 0 &&
+    dataEnum.variants[0].fields != null
+  )
+}
+
+export function isIdlTypeScalarEnum(
+  ty: IdlType | IdlDefinedType | IdlTypeEnum
+): ty is IdlTypeScalarEnum {
+  return isIdlTypeEnum(ty) && !isIdlTypeDataEnum(ty)
 }
 
 export function isIdlDefinedType(
@@ -211,6 +254,10 @@ export function isIdlInstructionAccountWithDesc(
   return typeof (ty as IdlInstructionAccountWithDesc).desc === 'string'
 }
 
+export function hasPaddingAttr(field: IdlField): boolean {
+  return field.attrs != null && field.attrs.includes(IDL_FIELD_ATTR_PADDING)
+}
+
 // -----------------
 // Packages
 // -----------------
@@ -222,3 +269,6 @@ export const BEET_EXPORT_NAME = 'beet'
 export const BEET_SOLANA_EXPORT_NAME = 'beetSolana'
 export const SOLANA_WEB3_EXPORT_NAME = 'web3'
 export const SOLANA_SPL_TOKEN_EXPORT_NAME = 'splToken'
+
+export const PROGRAM_ID_PACKAGE = '<program-id>'
+export const PROGRAM_ID_EXPORT_NAME = '<program-id-export>'

@@ -1,12 +1,20 @@
 import { PathLike } from 'fs'
 import { renderScalarEnums } from './render-enums'
 import { renderDataStruct } from './serdes'
+import { CustomSerializers, SerializerSnippets } from './serializers'
 import { ForceFixable, TypeMapper } from './type-mapper'
+import { strict as assert } from 'assert'
 import {
+  asIdlTypeArray,
+  BEET_SOLANA_EXPORT_NAME,
+  hasPaddingAttr,
   IdlAccount,
+  isIdlTypeDataEnum,
   isIdlTypeDefined,
+  isIdlTypeScalarEnum,
   PrimitiveTypeKey,
   ResolveFieldType,
+  SOLANA_WEB3_EXPORT_NAME,
   TypeMappedSerdeField,
 } from './types'
 import {
@@ -29,13 +37,19 @@ class AccountRenderer {
   readonly accountDataArgsTypeName: string
   readonly accountDiscriminatorName: string
   readonly beetName: string
+  readonly paddingField?: { name: string; size: number }
+
+  readonly serializerSnippets: SerializerSnippets
+  private readonly programIdPubkey: string
 
   constructor(
     private readonly account: IdlAccount,
     private readonly fullFileDir: PathLike,
     private readonly hasImplicitDiscriminator: boolean,
     private readonly resolveFieldType: ResolveFieldType,
-    private readonly typeMapper: TypeMapper
+    private readonly programId: string,
+    private readonly typeMapper: TypeMapper,
+    private readonly serializers: CustomSerializers
   ) {
     this.upperCamelAccountName = account.name
       .charAt(0)
@@ -51,6 +65,33 @@ class AccountRenderer {
     this.accountDataArgsTypeName = `${this.accountDataClassName}Args`
     this.beetName = `${this.camelAccountName}Beet`
     this.accountDiscriminatorName = `${this.camelAccountName}Discriminator`
+
+    this.serializerSnippets = this.serializers.snippetsFor(
+      this.account.name,
+      this.fullFileDir as string,
+      this.beetName
+    )
+    this.paddingField = this.getPaddingField()
+
+    this.programIdPubkey = `new ${SOLANA_WEB3_EXPORT_NAME}.PublicKey('${this.programId}')`
+  }
+
+  private getPaddingField() {
+    const paddingField = this.account.type.fields.filter((f) =>
+      hasPaddingAttr(f)
+    )
+    if (paddingField.length === 0) return
+
+    assert.equal(
+      paddingField.length,
+      1,
+      'only one field of an account can be padding'
+    )
+    const field = paddingField[0]
+    const ty = asIdlTypeArray(field.type)
+    const [inner, size] = ty.array
+    assert.equal(inner, 'u8', 'padding field must be u8[]')
+    return { name: field.name, size }
   }
 
   private serdeProcess() {
@@ -63,26 +104,28 @@ class AccountRenderer {
   private getTypedFields() {
     return this.account.type.fields.map((f) => {
       const tsType = this.typeMapper.map(f.type, f.name)
-      return { name: f.name, tsType }
+      return { name: f.name, tsType, isPadding: hasPaddingAttr(f) }
     })
   }
 
   private getPrettyFields() {
-    return this.account.type.fields.map((f) => {
-      if (f.type === 'publicKey') {
-        return `${f.name}: this.${f.name}.toBase58()`
-      }
-      if (
-        f.type === 'u64' ||
-        f.type === 'u128' ||
-        f.type === 'u256' ||
-        f.type === 'u512' ||
-        f.type === 'i64' ||
-        f.type === 'i128' ||
-        f.type === 'i256' ||
-        f.type === 'i512'
-      ) {
-        return `${f.name}: (() => {
+    return this.account.type.fields
+      .filter((f) => !hasPaddingAttr(f))
+      .map((f) => {
+        if (f.type === 'publicKey') {
+          return `${f.name}: this.${f.name}.toBase58()`
+        }
+        if (
+          f.type === 'u64' ||
+          f.type === 'u128' ||
+          f.type === 'u256' ||
+          f.type === 'u512' ||
+          f.type === 'i64' ||
+          f.type === 'i128' ||
+          f.type === 'i256' ||
+          f.type === 'i512'
+        ) {
+          return `${f.name}: (() => {
         const x = <{ toNumber: () => number }>this.${f.name}
         if (typeof x.toNumber === 'function') {
           try {
@@ -91,18 +134,24 @@ class AccountRenderer {
         }
         return x
       })()`
-      }
-      if (
-        isIdlTypeDefined(f.type) &&
-        this.resolveFieldType(f.type.defined)?.kind === 'enum'
-      ) {
-        const tsType = this.typeMapper.map(f.type, f.name)
-        const variant = `${tsType}[this.${f.name}`
-        return `${f.name}: '${f.type.defined}.' + ${variant}]`
-      }
+        }
 
-      return `${f.name}: this.${f.name}`
-    })
+        if (isIdlTypeDefined(f.type)) {
+          const resolved = this.resolveFieldType(f.type.defined)
+
+          if (resolved != null && isIdlTypeScalarEnum(resolved)) {
+            const tsType = this.typeMapper.map(f.type, f.name)
+            const variant = `${tsType}[this.${f.name}`
+            return `${f.name}: '${f.type.defined}.' + ${variant}]`
+          }
+          if (resolved != null && isIdlTypeDataEnum(resolved)) {
+            // TODO(thlorenz): Improve rendering of data enums to include other fields
+            return `${f.name}: this.${f.name}.__kind`
+          }
+        }
+
+        return `${f.name}: this.${f.name}`
+      })
   }
 
   // -----------------
@@ -119,9 +168,10 @@ class AccountRenderer {
   // Account Args
   // -----------------
   private renderAccountDataArgsType(
-    fields: { name: string; tsType: string }[]
+    fields: { name: string; tsType: string; isPadding: boolean }[]
   ) {
     const renderedFields = fields
+      .filter((f) => !f.isPadding)
       .map((f) => colonSeparatedTypedField(f))
       .join('\n  ')
 
@@ -226,25 +276,41 @@ export type ${this.accountDataArgsTypeName} = {
     return `export const ${this.accountDiscriminatorName} = ${accountDisc}`
   }
 
-  private renderAccountDataClass(fields: { name: string; tsType: string }[]) {
+  private renderSerializeValue() {
+    const serializeValues = []
+    if (this.hasImplicitDiscriminator) {
+      serializeValues.push(
+        `accountDiscriminator: ${this.accountDiscriminatorName}`
+      )
+    }
+    if (this.paddingField != null) {
+      serializeValues.push(`padding: Array(${this.paddingField.size}).fill(0)`)
+    }
+    return serializeValues.length > 0
+      ? `{ 
+      ${serializeValues.join(',\n      ')},
+      ...this
+    }`
+      : 'this'
+  }
+
+  private renderAccountDataClass(
+    fields: { name: string; tsType: string; isPadding: boolean }[]
+  ) {
     const constructorArgs = fields
+      .filter((f) => !f.isPadding)
       .map((f) => colonSeparatedTypedField(f, 'readonly '))
       .join(',\n    ')
 
     const constructorParams = fields
+      .filter((f) => !f.isPadding)
       .map((f) => `args.${f.name}`)
       .join(',\n      ')
 
     const prettyFields = this.getPrettyFields().join(',\n      ')
     const byteSizeMethods = this.renderByteSizeMethods()
     const accountDiscriminatorVar = this.renderAccountDiscriminatorVar()
-
-    const serializeValue = this.hasImplicitDiscriminator
-      ? `{ 
-      accountDiscriminator: ${this.accountDiscriminatorName},
-      ...this
-    }`
-      : 'this'
+    const serializeValue = this.renderSerializeValue()
 
     return `
 ${accountDiscriminatorVar};
@@ -299,6 +365,16 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
 
 
   /**
+   * Provides a {@link ${SOLANA_WEB3_EXPORT_NAME}.Connection.getProgramAccounts} config builder,
+   * to fetch accounts matching filters that can be specified via that builder.
+   *
+   * @param programId - the program that owns the accounts we are filtering
+   */
+  static gpaBuilder(programId: web3.PublicKey = ${this.programIdPubkey}) {
+    return ${BEET_SOLANA_EXPORT_NAME}.GpaBuilder.fromStruct(programId, ${this.beetName})
+  }
+
+  /**
    * Deserializes the {@link ${this.accountDataClassName}} from the provided data Buffer.
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
@@ -306,7 +382,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
     buf: Buffer,
     offset = 0
   ): [ ${this.accountDataClassName}, number ]{
-    return ${this.beetName}.deserialize(buf, offset);
+    return ${this.serializerSnippets.deserialize}(buf, offset);
   }
 
   /**
@@ -314,7 +390,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
    * @returns a tuple of the created Buffer and the offset up to which the buffer was written to store it.
    */
   serialize(): [ Buffer, number ] {
-    return ${this.beetName}.serialize(${serializeValue})
+    return ${this.serializerSnippets.serialize}(${serializeValue})
   }
 
   ${byteSizeMethods}
@@ -358,6 +434,7 @@ export class ${this.accountDataClassName} implements ${this.accountDataArgsTypeN
       discriminatorName,
       discriminatorField,
       discriminatorType,
+      paddingField: this.paddingField,
       isFixable: this.typeMapper.usedFixableSerde,
     })
     return `
@@ -379,6 +456,7 @@ ${struct}`.trim()
     const accountDataClass = this.renderAccountDataClass(typedFields)
     const beetDecl = this.renderBeet(beetFields)
     return `${imports}
+${this.serializerSnippets.importSnippet}
 
 ${enums}
 
@@ -386,7 +464,9 @@ ${accountDataArgsType}
 
 ${accountDataClass}
 
-${beetDecl}`
+${beetDecl}
+
+${this.serializerSnippets.resolveFunctionsSnippet}`
   }
 }
 
@@ -396,7 +476,9 @@ export function renderAccount(
   accountFilesByType: Map<string, string>,
   customFilesByType: Map<string, string>,
   typeAliases: Map<string, PrimitiveTypeKey>,
+  serializers: CustomSerializers,
   forceFixable: ForceFixable,
+  programId: string,
   resolveFieldType: ResolveFieldType,
   hasImplicitDiscriminator: boolean
 ) {
@@ -411,7 +493,9 @@ export function renderAccount(
     fullFileDir,
     hasImplicitDiscriminator,
     resolveFieldType,
-    typeMapper
+    programId,
+    typeMapper,
+    serializers
   )
   return renderer.render()
 }
