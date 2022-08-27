@@ -432,17 +432,7 @@ ${unionTypes}
     return code
   }
   private renderImportInstructionIndex(modules: string[], label: string) {
-    let count = 0
-    let code = modules.map((x) => `export * from './${x}.js';`).join('\n') + '\n' + '\n'
-    code = code + modules.map((x) => `import * as ${x} from './${x}.js';`).join('\n')  + '\n' + '\n'
-    code = code + `export enum InstructionType {`+'\n'
-    code = code + modules.map((x) => '\t' + `${x} = '${x}',`).join('\n') + '\n' + '}' + '\n' + '\n'
-    code = code + `export const IX_METHOD_CODE: Record<string,InstructionType | undefined> = {` + '\n'
-    code = code + modules.map((x) => `[${count++}]: InstructionType.${x},`).join('\n')  + '\n' + '\n' + '}' + '\n' + '\n'
-    code = code + `export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {` + '\n'
-    code = code + modules.map((x) => `[InstructionType.${x}]: ${x}.${x}Struct,`).join('\n')  + '\n' + '\n' + '}' + '\n' + '\n'
-    code = code + `export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {` + '\n'
-    code = code + modules.map((x) => `[InstructionType.${x}]: ${x}.${this.capitalize(x)}Accounts,`).join('\n')  + '\n' + '\n' + '}'
+    let code = modules.map((module) => `export * from './${module}.js';`).join('\n')
     
     if (this.formatCode) {
       try {
@@ -453,9 +443,5 @@ ${unionTypes}
       }
     }
     return code
-  }
-  private capitalize(word: string) {
-    const capizalized = word.charAt(0).toUpperCase() + word.slice(1);
-    return capizalized
   }
 }
