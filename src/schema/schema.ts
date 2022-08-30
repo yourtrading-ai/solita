@@ -313,7 +313,8 @@ for (const [name] of Object.entries(accounts)) {
 }
 schema = schema.slice(0, schema.length-1)
 
-schema += `}
+schema += `
+}
 
 union Accounts = `
 for (const [name] of Object.entries(accounts)) {
