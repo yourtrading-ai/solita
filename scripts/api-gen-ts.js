@@ -4,7 +4,7 @@
 const { Solita, Schema } = require('../dist/src/index.js')
 const path = require('path')
 
-const PROGRAM_NAME = 'switchboard_v2'
+const PROGRAM_NAME = 'jet'
 
 const idlDir = path.join(__dirname, 'idl')
 const generatedSDKDir = path.join(
