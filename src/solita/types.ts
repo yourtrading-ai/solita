@@ -274,8 +274,8 @@ export function isIdlInstructionAccountWithDesc(
 // -----------------
 // Packages
 // -----------------
-export const BEET_ALEPH_PACKAGE = '@aleph-indexer/beet'
-export const BEET_SOLANA_ALEPH_PACKAGE = '@aleph-indexer/beet-solana'
+export const BEET_ALEPH_PACKAGE = '@metaplex-foundation/beet'
+export const BEET_SOLANA_ALEPH_PACKAGE = '@metaplex-foundation/beet-solana'
 export const SOLANA_WEB3_PACKAGE = '@solana/web3.js'
 export const SOLANA_SPL_TOKEN_PACKAGE = '@solana/spl-token'
 export const BEET_EXPORT_NAME = 'beet'
